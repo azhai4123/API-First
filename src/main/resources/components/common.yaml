@@ -1,0 +1,72 @@
+# =========================================================================
+# COMMON SCHEMAS: PHÂN TRANG & THÔNG BÁO LỖI THỐNG NHẤT
+# =========================================================================
+PageMetadata:
+  type: object
+  description: Siêu dữ liệu phân trang chuẩn RESTful
+  required:
+    - number
+    - size
+    - totalElements
+    - totalPages
+    - last
+  properties:
+    number:
+      type: integer
+      description: Chỉ số trang hiện tại (bắt đầu từ 0)
+      example: 0
+    size:
+      type: integer
+      description: Kích thước số bản ghi trên một trang
+      example: 10
+    totalElements:
+      type: integer
+      format: int64
+      description: Tổng số lượng bản ghi thỏa mãn điều kiện
+      example: 42
+    totalPages:
+      type: integer
+      description: Tổng số trang có thể phân bổ
+      example: 5
+    last:
+      type: boolean
+      description: Cờ đánh dấu có phải trang cuối cùng hay không
+      example: false
+
+ErrorDetail:
+  type: object
+  description: Chi tiết vị trí và nội dung lỗi trường dữ liệu
+  required:
+    - field
+    - issue
+  properties:
+    field:
+      type: string
+      description: Tên trường dữ liệu gây lỗi
+      example: "email"
+    issue:
+      type: string
+      description: Mô tả chi tiết nguyên nhân lỗi
+      example: "Email không đúng định dạng chuẩn RFC 5322"
+
+ErrorResponse:
+  type: object
+  description: Cấu trúc phản hồi lỗi chuẩn mực toàn hệ thống
+  required:
+    - code
+    - message
+  properties:
+    code:
+      type: string
+      description: Mã định danh lỗi máy đọc được (Machine-readable)
+      example: "VALIDATION_FAILED"
+    message:
+      type: string
+      description: Thông điệp giải thích lỗi dễ hiểu cho người dùng
+      example: "Dữ liệu yêu cầu không vượt qua kiểm tra ràng buộc"
+    details:
+      type: array
+      description: Danh sách các lỗi chi tiết (nếu có)
+      items:
+        $ref: '#/ErrorDetail'
+

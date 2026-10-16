@@ -1,0 +1,85 @@
+# =========================================================================
+# CATEGORIES SCHEMAS: QUẢN LÝ DANH MỤC PHÂN LOẠI HÀNG HÓA
+# =========================================================================
+CategoryResponse:
+  type: object
+  description: Chi tiết danh mục sản phẩm
+  required:
+    - id
+    - code
+    - name
+    - status
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: ID danh mục
+      example: 1
+    code:
+      type: string
+      description: Mã định danh phân loại duy nhất
+      example: "ACCESSORIES"
+    name:
+      type: string
+      description: Tên hiển thị danh mục
+      example: "Phụ kiện máy tính"
+    description:
+      type: string
+      description: Mô tả thông tin danh mục
+      example: "Bàn phím, chuột, tai nghe và giá treo màn hình"
+    status:
+      type: string
+      enum: [ACTIVE, INACTIVE]
+      example: "ACTIVE"
+    createdAt:
+      type: string
+      format: date-time
+      description: Thời điểm khởi tạo danh mục (ISO-8601 UTC)
+      example: "2026-10-10T08:00:00Z"
+    updatedAt:
+      type: string
+      format: date-time
+      description: Thời điểm cập nhật danh mục lần cuối (ISO-8601 UTC)
+      example: "2026-10-15T12:00:00Z"
+
+CategoryCreateRequest:
+  type: object
+  description: Dữ liệu thêm mới danh mục
+  required:
+    - code
+    - name
+  properties:
+    code:
+      type: string
+      pattern: "^[A-Z0-9_-]{3,30}$"
+      example: "MONITOR"
+    name:
+      type: string
+      minLength: 2
+      maxLength: 100
+      example: "Màn hình đồ họa"
+    description:
+      type: string
+      maxLength: 500
+      example: "Màn hình chuyên dụng cho thiết kế và gaming"
+
+CategoryUpdateRequest:
+  type: object
+  description: Dữ liệu cập nhật danh mục
+  required:
+    - name
+  properties:
+    name:
+      type: string
+      minLength: 2
+      maxLength: 100
+      example: "Màn hình máy tính & Gaming"
+    description:
+      type: string
+      maxLength: 500
+      example: "Mô tả mới"
+    status:
+      type: string
+      enum: [ACTIVE, INACTIVE]
+      example: "ACTIVE"
+

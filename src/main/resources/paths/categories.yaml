@@ -1,0 +1,144 @@
+# =========================================================================
+# CATEGORIES PATHS: CÁC ENDPOINT QUẢN LÝ DANH MỤC SẢN PHẨM
+# =========================================================================
+categories_collection:
+  get:
+    tags:
+      - categories
+    summary: Lấy danh sách toàn bộ danh mục sản phẩm
+    operationId: getCategories
+    responses:
+      '200':
+        description: Danh sách danh mục hoạt động
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '../components/categories.yaml#/CategoryResponse'
+  post:
+    tags:
+      - categories
+    summary: Tạo mới danh mục sản phẩm (Admin / Staff)
+    operationId: createCategory
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/categories.yaml#/CategoryCreateRequest'
+    responses:
+      '201':
+        description: Tạo danh mục thành công
+        headers:
+          Location:
+            schema:
+              type: string
+        content:
+          application/json:
+            schema:
+              $ref: '../components/categories.yaml#/CategoryResponse'
+      '400':
+        description: Dữ liệu không hợp lệ
+        content:
+          application/json:
+            schema:
+              $ref: '../components/common.yaml#/ErrorResponse'
+      '409':
+        description: Trùng mã code danh mục
+        content:
+          application/json:
+            schema:
+              $ref: '../components/common.yaml#/ErrorResponse'
+
+categories_item:
+  get:
+    tags:
+      - categories
+    summary: Xem chi tiết danh mục theo ID
+    operationId: getCategoryById
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    responses:
+      '200':
+        description: Chi tiết danh mục
+        content:
+          application/json:
+            schema:
+              $ref: '../components/categories.yaml#/CategoryResponse'
+      '404':
+        description: Không tìm thấy danh mục
+        content:
+          application/json:
+            schema:
+              $ref: '../components/common.yaml#/ErrorResponse'
+  put:
+    tags:
+      - categories
+    summary: Chỉnh sửa thông tin danh mục
+    operationId: updateCategory
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/categories.yaml#/CategoryUpdateRequest'
+    responses:
+      '200':
+        description: Cập nhật thành công
+        content:
+          application/json:
+            schema:
+              $ref: '../components/categories.yaml#/CategoryResponse'
+      '400':
+        description: Dữ liệu không hợp lệ
+        content:
+          application/json:
+            schema:
+              $ref: '../components/common.yaml#/ErrorResponse'
+      '404':
+        description: Không tìm thấy danh mục
+        content:
+          application/json:
+            schema:
+              $ref: '../components/common.yaml#/ErrorResponse'
+  delete:
+    tags:
+      - categories
+    summary: Xóa danh mục sản phẩm (Fail-Fast nếu có sản phẩm ràng buộc)
+    operationId: deleteCategory
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    responses:
+      '204':
+        description: Xóa thành công
+      '404':
+        description: Không tìm thấy danh mục
+        content:
+          application/json:
+            schema:
+              $ref: '../components/common.yaml#/ErrorResponse'
+      '409':
+        description: Danh mục đang chứa sản phẩm, không thể xóa
+        content:
+          application/json:
+            schema:
+              $ref: '../components/common.yaml#/ErrorResponse'
+

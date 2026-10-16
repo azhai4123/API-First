@@ -1,0 +1,146 @@
+# =========================================================================
+# CUSTOMERS SCHEMAS: QUẢN LÝ THÔNG TIN KHÁCH HÀNG
+# =========================================================================
+CustomerResponse:
+  type: object
+  description: Dữ liệu hồ sơ khách hàng trả về từ hệ thống
+  required:
+    - id
+    - fullName
+    - email
+    - phone
+    - address
+    - status
+    - createdAt
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: ID định danh duy nhất của khách hàng
+      example: 1
+    fullName:
+      type: string
+      description: Họ và tên đầy đủ
+      example: "Nguyen Van A"
+    email:
+      type: string
+      format: email
+      description: Địa chỉ email định danh
+      example: "nguyenvana@example.com"
+    phone:
+      type: string
+      description: Số điện thoại liên lạc
+      example: "0901234567"
+    address:
+      type: string
+      description: Địa chỉ giao hàng mặc định
+      example: "72 Le Thanh Ton, Quan 1, TP.HCM"
+    status:
+      type: string
+      enum: [ACTIVE, INACTIVE, LOCKED]
+      description: Trạng thái tài khoản
+      example: "ACTIVE"
+    role:
+      type: string
+      enum: [CUSTOMER, STAFF, ADMIN]
+      description: Vai trò trong hệ thống
+      example: "CUSTOMER"
+    avatarUrl:
+      type: string
+      format: uri
+      description: Ảnh đại diện người dùng
+      example: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
+    createdAt:
+      type: string
+      format: date-time
+      description: Thời điểm tạo tài khoản (ISO-8601 UTC)
+      example: "2026-10-14T08:30:00Z"
+    updatedAt:
+      type: string
+      format: date-time
+      description: Thời điểm cập nhật hồ sơ lần cuối (ISO-8601 UTC)
+      example: "2026-10-15T12:00:00Z"
+
+CustomerCreateRequest:
+  type: object
+  description: Dữ liệu đăng ký khách hàng mới
+  required:
+    - fullName
+    - email
+    - phone
+    - address
+  properties:
+    fullName:
+      type: string
+      minLength: 2
+      maxLength: 100
+      description: Họ và tên (tối thiểu 2 ký tự)
+      example: "Nguyen Van A"
+    email:
+      type: string
+      format: email
+      maxLength: 100
+      description: Email hợp lệ
+      example: "nguyenvana@example.com"
+    role:
+      type: string
+      enum: [CUSTOMER, ADMIN]
+      default: "CUSTOMER"
+      example: "CUSTOMER"
+    avatarUrl:
+      type: string
+      format: uri
+      example: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
+    phone:
+      type: string
+      pattern: "^[0-9]{10,11}$"
+      description: Số điện thoại từ 10 đến 11 số
+      example: "0901234567"
+    address:
+      type: string
+      minLength: 5
+      maxLength: 255
+      description: Địa chỉ chi tiết
+      example: "72 Le Thanh Ton, Quan 1, TP.HCM"
+
+CustomerUpdateRequest:
+  type: object
+  description: Dữ liệu cập nhật hồ sơ khách hàng
+  required:
+    - fullName
+    - phone
+    - address
+  properties:
+    fullName:
+      type: string
+      minLength: 2
+      maxLength: 100
+      example: "Nguyen Van A"
+    phone:
+      type: string
+      pattern: "^[0-9]{10,11}$"
+      example: "0909876543"
+    address:
+      type: string
+      minLength: 5
+      maxLength: 255
+      example: "123 Nguyen Hue, Quan 1, TP.HCM"
+    status:
+      type: string
+      enum: [ACTIVE, INACTIVE, LOCKED]
+      example: "ACTIVE"
+
+CustomerPageResponse:
+  type: object
+  description: Trang danh sách khách hàng có phân trang
+  required:
+    - content
+    - page
+  properties:
+    content:
+      type: array
+      items:
+        $ref: '#/CustomerResponse'
+    page:
+      $ref: 'common.yaml#/PageMetadata'
+

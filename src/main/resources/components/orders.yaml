@@ -1,0 +1,160 @@
+# =========================================================================
+# ORDERS SCHEMAS: QUẢN LÝ ĐƠN HÀNG, CHI TIẾT ĐƠN HÀNG VÀ TRẠNG THÁI
+# =========================================================================
+OrderItemRequest:
+  type: object
+  description: Chi tiết mặt hàng cần đặt
+  required:
+    - productId
+    - quantity
+  properties:
+    productId:
+      type: integer
+      format: int64
+      description: ID sản phẩm
+      example: 101
+    quantity:
+      type: integer
+      minimum: 1
+      description: Số lượng cần mua
+      example: 2
+
+OrderItemResponse:
+  type: object
+  description: Chi tiết mặt hàng trong đơn hàng kèm giá bảo lưu lịch sử
+  required:
+    - id
+    - productId
+    - productName
+    - quantity
+    - unitPrice
+    - subtotal
+  properties:
+    id:
+      type: integer
+      format: int64
+      example: 9001
+    productId:
+      type: integer
+      format: int64
+      example: 101
+    productName:
+      type: string
+      example: "Bàn phím cơ không dây Keychron K2"
+    quantity:
+      type: integer
+      example: 2
+    unitPrice:
+      type: number
+      format: double
+      description: Đơn giá cố định tại thời điểm tạo đơn
+      example: 1850000.00
+    subtotal:
+      type: number
+      format: double
+      description: Thành tiền mục hàng
+      example: 3700000.00
+    createdAt:
+      type: string
+      format: date-time
+      description: Thời điểm tạo dòng mục hàng (ISO-8601 UTC)
+      example: "2026-10-14T09:15:00Z"
+
+OrderCreateRequest:
+  type: object
+  description: Yêu cầu đặt hàng mới
+  required:
+    - customerId
+    - shippingAddress
+    - items
+  properties:
+    customerId:
+      type: integer
+      format: int64
+      description: ID khách hàng đặt mua
+      example: 1
+    shippingAddress:
+      type: string
+      minLength: 5
+      maxLength: 255
+      description: Địa chỉ nhận hàng
+      example: "72 Le Thanh Ton, Quan 1, TP.HCM"
+    items:
+      type: array
+      minItems: 1
+      description: Danh sách sản phẩm trong giỏ hàng
+      items:
+        $ref: '#/OrderItemRequest'
+
+OrderStatusUpdateRequest:
+  type: object
+  description: Cập nhật trạng thái xử lý đơn hàng
+  required:
+    - status
+  properties:
+    status:
+      type: string
+      enum: [PENDING, CONFIRMED, SHIPPING, DELIVERED, CANCELLED]
+      description: Trạng thái mới của đơn hàng
+      example: "CONFIRMED"
+
+OrderResponse:
+  type: object
+  description: Chi tiết đơn hàng hoàn chỉnh
+  required:
+    - id
+    - customerId
+    - totalAmount
+    - status
+    - shippingAddress
+    - items
+    - createdAt
+  properties:
+    id:
+      type: integer
+      format: int64
+      example: 5001
+    customerId:
+      type: integer
+      format: int64
+      example: 1
+    totalAmount:
+      type: number
+      format: double
+      description: Tổng giá trị đơn hàng
+      example: 3700000.00
+    status:
+      type: string
+      enum: [PENDING, CONFIRMED, SHIPPING, DELIVERED, CANCELLED]
+      example: "PENDING"
+    shippingAddress:
+      type: string
+      example: "72 Le Thanh Ton, Quan 1, TP.HCM"
+    items:
+      type: array
+      items:
+        $ref: '#/OrderItemResponse'
+    createdAt:
+      type: string
+      format: date-time
+      example: "2026-10-14T09:15:00Z"
+    updatedAt:
+      type: string
+      format: date-time
+      description: Thời điểm cập nhật đơn hàng lần cuối (ISO-8601 UTC)
+      example: "2026-10-15T12:00:00Z"
+
+OrderPageResponse:
+  type: object
+  description: Trang danh sách đơn hàng
+  required:
+    - content
+    - page
+  properties:
+    content:
+      type: array
+      items:
+        $ref: '#/OrderResponse'
+    page:
+      $ref: 'common.yaml#/PageMetadata'
+
