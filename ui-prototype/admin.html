@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full bg-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cổng Quản Trị Hệ Thống - Enterprise Admin Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="flex flex-col min-h-screen text-slate-800 antialiased font-sans">
+
+  <!-- SHARED HEADER -->
+  <div id="shared-header"></div>
+
+  <!-- ADMIN PORTAL WRAPPER -->
+  <div class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 flex flex-col md:flex-row gap-6">
+
+    <!-- ADMIN SIDEBAR -->
+    <aside class="w-full md:w-64 space-y-4">
+      <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Bảng điều khiển</span>
+          <h2 class="text-base font-extrabold text-slate-900 mt-1">Admin Portal</h2>
+        </div>
+
+        <nav class="space-y-1 text-xs font-semibold">
+          <button onclick="switchAdminTab('products')" id="admin-nav-products" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-blue-50 text-blue-600 font-bold transition">
+            <span class="flex items-center gap-2.5"><span>📦</span> Quản lý Sản phẩm</span>
+            <span id="badge-count-products" class="text-[10px] px-2 py-0.5 rounded-full bg-blue-200 text-blue-800">0</span>
+          </button>
+          <button onclick="switchAdminTab('categories')" id="admin-nav-categories" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
+            <span class="flex items-center gap-2.5"><span>📁</span> Quản lý Danh mục</span>
+            <span id="badge-count-categories" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">0</span>
+          </button>
+          <button onclick="switchAdminTab('orders')" id="admin-nav-orders" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
+            <span class="flex items-center gap-2.5"><span>🛒</span> Quản lý Đơn hàng</span>
+            <span id="badge-count-orders" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">0</span>
+          </button>
+          <button onclick="switchAdminTab('customers')" id="admin-nav-customers" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
+            <span class="flex items-center gap-2.5"><span>👥</span> Hồ sơ Khách hàng</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Quick Tips Card -->
+      <div class="bg-gradient-to-br from-slate-900 to-indigo-950 p-5 rounded-3xl text-white text-xs shadow-md space-y-2">
+        <div class="font-bold flex items-center gap-1.5 text-amber-400">
+          <span>💡</span> API-First Standard
+        </div>
+        <p class="text-slate-300 leading-relaxed text-[11px]">
+          Mọi dữ liệu trên giao diện này được xử lý trực tiếp qua các REST Controller của <strong>Spring Boot 3</strong> kết nối CSDL <strong>MySQL Laragon</strong>.
+        </p>
+      </div>
+    </aside>
+
+    <!-- ADMIN CONTENT AREA -->
+    <main class="flex-1 space-y-6">
+
+      <!-- ============================================== -->
+      <!-- TAB 1: PRODUCT MANAGEMENT                       -->
+      <!-- ============================================== -->
+      <section id="pane-admin-products" class="space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">Danh Sách Sản Phẩm</h3>
+            <p class="text-xs text-slate-500">Quản lý kho hàng, tạo mới và xóa sản phẩm (`/products`)</p>
+          </div>
+          <button onclick="openModal('modal-product-add')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow-md shadow-blue-500/20 flex items-center gap-1.5">
+            <span>➕</span> Thêm sản phẩm mới
+          </button>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
+                <tr>
+                  <th class="p-3.5 w-16">ID</th>
+                  <th class="p-3.5">Sản phẩm</th>
+                  <th class="p-3.5">Mã SKU</th>
+                  <th class="p-3.5">Danh mục</th>
+                  <th class="p-3.5">Giá bán</th>
+                  <th class="p-3.5">Tồn kho</th>
+                  <th class="p-3.5 text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="admin-products-tbody" class="divide-y divide-slate-100">
+                <tr><td colspan="7" class="p-6 text-center text-slate-400">Đang tải sản phẩm...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 2: CATEGORY MANAGEMENT                      -->
+      <!-- ============================================== -->
+      <section id="pane-admin-categories" class="hidden space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">Quản Lý Danh Mục</h3>
+            <p class="text-xs text-slate-500">Thiết lập các nhóm ngành hàng (`/categories`)</p>
+          </div>
+          <button onclick="openModal('modal-category-add')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow-md shadow-blue-500/20 flex items-center gap-1.5">
+            <span>➕</span> Thêm danh mục
+          </button>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
+                <tr>
+                  <th class="p-3.5 w-16">ID</th>
+                  <th class="p-3.5">Tên danh mục</th>
+                  <th class="p-3.5">Mã Code</th>
+                  <th class="p-3.5">Mô tả</th>
+                  <th class="p-3.5">Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody id="admin-categories-tbody" class="divide-y divide-slate-100">
+                <tr><td colspan="5" class="p-6 text-center text-slate-400">Đang tải danh mục...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 3: ORDER LIFECYCLE MANAGEMENT               -->
+      <!-- ============================================== -->
+      <section id="pane-admin-orders" class="hidden space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">Quản Lý Vòng Đời Đơn Hàng</h3>
+            <p class="text-xs text-slate-500">Cập nhật trạng thái và kích hoạt hoàn kho khi hủy đơn</p>
+          </div>
+          <button onclick="loadAdminOrders()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">
+            🔄 Làm mới
+          </button>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
+                <tr>
+                  <th class="p-3.5 w-16">Mã đơn</th>
+                  <th class="p-3.5">Khách hàng</th>
+                  <th class="p-3.5">Địa chỉ giao</th>
+                  <th class="p-3.5">Tổng tiền</th>
+                  <th class="p-3.5">Trạng thái hiện tại</th>
+                  <th class="p-3.5 text-right">Chuyển trạng thái</th>
+                </tr>
+              </thead>
+              <tbody id="admin-orders-tbody" class="divide-y divide-slate-100">
+                <tr><td colspan="6" class="p-6 text-center text-slate-400">Đang tải đơn hàng...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 4: CUSTOMERS PROFILE MANAGEMENT             -->
+      <!-- ============================================== -->
+      <section id="pane-admin-customers" class="hidden space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">Danh Sách Khách Hàng & Tài Khoản</h3>
+            <p class="text-xs text-slate-500">Tra cứu người dùng đã đăng ký (`/customers`)</p>
+          </div>
+          <button onclick="loadAdminCustomers()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">
+            🔄 Làm mới
+          </button>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
+                <tr>
+                  <th class="p-3.5 w-16">ID</th>
+                  <th class="p-3.5">Họ và tên</th>
+                  <th class="p-3.5">Email</th>
+                  <th class="p-3.5">Số điện thoại</th>
+                  <th class="p-3.5">Vai trò (Role)</th>
+                  <th class="p-3.5">Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody id="admin-customers-tbody" class="divide-y divide-slate-100">
+                <tr><td colspan="6" class="p-6 text-center text-slate-400">Đang tải khách hàng...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- MODAL: ADD PRODUCT -->
+  <div id="modal-product-add" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-bold text-slate-900 text-base">Thêm Sản Phẩm Mới</h3>
+        <button onclick="closeModal('modal-product-add')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+      </div>
+
+      <form id="form-product-add" onsubmit="handleProductCreate(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Tên sản phẩm (*):</label>
+          <input type="text" id="add-prod-name" required placeholder="Ví dụ: Chuột Không Dây Logitech G502" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Mã SKU (* duy nhất):</label>
+            <input type="text" id="add-prod-sku" required placeholder="MS-LOGI-G502" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono uppercase focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Danh mục (*):</label>
+            <select id="add-prod-cat" required class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 bg-white">
+              <!-- Dynamic Categories -->
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Giá bán (VND) (*):</label>
+            <input type="number" id="add-prod-price" required min="1000" step="1000" placeholder="1500000" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Số lượng tồn kho (*):</label>
+            <input type="number" id="add-prod-stock" required min="0" placeholder="20" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <!-- IMAGE UPLOAD / URL CHOSER -->
+        <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2">
+          <label class="font-semibold text-slate-700 block">Hình ảnh sản phẩm (*):</label>
+          <div class="flex items-center gap-2">
+            <input type="file" id="add-prod-file" accept="image/*" onchange="handleImageFileSelected(this)" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+          </div>
+          <div class="text-[11px] text-slate-400">Hoặc dán trực tiếp đường dẫn URL ảnh:</div>
+          <input type="url" id="add-prod-img" placeholder="https://images.unsplash.com/photo-..." class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs">
+          <div id="upload-preview" class="hidden flex items-center gap-3 pt-2">
+            <img id="upload-preview-img" src="" class="w-12 h-12 rounded-lg object-cover border">
+            <span class="text-[11px] text-emerald-600 font-semibold">✓ Ảnh đã chọn sẵn sàng</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Mô tả sản phẩm:</label>
+          <textarea id="add-prod-desc" rows="3" placeholder="Mô tả thông số kỹ thuật, chất liệu, tính năng..." class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t">
+          <button type="button" onclick="closeModal('modal-product-add')" class="px-4 py-2 rounded-xl border text-slate-600 hover:bg-slate-50">Hủy</button>
+          <button type="submit" class="px-5 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md">Tạo sản phẩm</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD CATEGORY -->
+  <div id="modal-category-add" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-bold text-slate-900 text-base">Thêm Danh Mục Mới</h3>
+        <button onclick="closeModal('modal-category-add')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+      </div>
+      <form onsubmit="handleCategoryCreate(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Tên danh mục (*):</label>
+          <input type="text" id="add-cat-name" required placeholder="Ví dụ: Thiết bị mạng & Wi-Fi" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Mã Code (* duy nhất):</label>
+          <input type="text" id="add-cat-code" required placeholder="NETWORK" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono uppercase focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="font-semibold text-slate-700 block mb-1">Mô tả ngắn:</label>
+          <input type="text" id="add-cat-desc" placeholder="Router, Switch và phụ kiện mạng" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t">
+          <button type="button" onclick="closeModal('modal-category-add')" class="px-4 py-2 rounded-xl border text-slate-600 hover:bg-slate-50">Hủy</button>
+          <button type="submit" class="px-5 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md">Tạo danh mục</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- SHARED FOOTER -->
+  <div id="shared-footer"></div>
+
+  <!-- SCRIPTS -->
+  <script src="/js/api.js"></script>
+  <script src="/js/shared-nav.js"></script>
+  <script>
+    let currentAdminTab = 'products';
+    let cachedCategories = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      renderSharedHeader('admin');
+      renderSharedFooter();
+      await loadAdminCategories();
+      await loadAdminProducts();
+    });
+
+    function switchAdminTab(tabName) {
+      currentAdminTab = tabName;
+      ['products', 'categories', 'orders', 'customers'].forEach(tab => {
+        const pane = document.getElementById(`pane-admin-${tab}`);
+        const nav = document.getElementById(`admin-nav-${tab}`);
+        if (pane) pane.classList.toggle('hidden', tab !== tabName);
+        if (nav) {
+          nav.classList.toggle('bg-blue-50', tab === tabName);
+          nav.classList.toggle('text-blue-600', tab === tabName);
+          nav.classList.toggle('font-bold', tab === tabName);
+          nav.classList.toggle('text-slate-600', tab !== tabName);
+        }
+      });
+
+      if (tabName === 'products') loadAdminProducts();
+      else if (tabName === 'categories') loadAdminCategories();
+      else if (tabName === 'orders') loadAdminOrders();
+      else if (tabName === 'customers') loadAdminCustomers();
+    }
+
+    async function loadAdminProducts() {
+      const tbody = document.getElementById('admin-products-tbody');
+      const res = await apiCall('GET', '/products?page=1&size=50');
+      const items = res.data?.content || [];
+      document.getElementById('badge-count-products').textContent = items.length;
+
+      if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">Không có sản phẩm nào.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map(p => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3.5 font-mono text-slate-400">${p.id}</td>
+          <td class="p-3.5 font-semibold text-slate-800 flex items-center gap-2.5">
+            <img src="${p.imageUrl}" class="w-8 h-8 rounded-lg object-cover border" onerror="this.src='https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=100'">
+            <span class="truncate max-w-xs" title="${p.name}">${p.name}</span>
+          </td>
+          <td class="p-3.5 font-mono text-blue-600 font-semibold">${p.sku}</td>
+          <td class="p-3.5 text-slate-600">${p.category}</td>
+          <td class="p-3.5 font-bold text-slate-900">${(p.price || 0).toLocaleString()} đ</td>
+          <td class="p-3.5">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${p.stockQuantity > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+              ${p.stockQuantity > 0 ? `Còn ${p.stockQuantity}` : 'Hết hàng'}
+            </span>
+          </td>
+          <td class="p-3.5 text-right space-x-1">
+            <button onclick="deleteProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}')" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 text-xs" title="Xóa sản phẩm">🗑️</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadAdminCategories() {
+      const tbody = document.getElementById('admin-categories-tbody');
+      const select = document.getElementById('add-prod-cat');
+      const res = await apiCall('GET', '/categories');
+      cachedCategories = res.data || [];
+      document.getElementById('badge-count-categories').textContent = cachedCategories.length;
+
+      if (select) {
+        select.innerHTML = cachedCategories.map(c => `<option value="${c.id}">${c.name} (${c.code})</option>`).join('');
+      }
+
+      if (!tbody) return;
+      tbody.innerHTML = cachedCategories.map(c => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3.5 font-mono text-slate-400">${c.id}</td>
+          <td class="p-3.5 font-bold text-slate-800">${c.name}</td>
+          <td class="p-3.5 font-mono text-blue-600">${c.code}</td>
+          <td class="p-3.5 text-slate-500">${c.description || ''}</td>
+          <td class="p-3.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">${c.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadAdminOrders() {
+      const tbody = document.getElementById('admin-orders-tbody');
+      // Lấy lịch sử đơn hàng của khách hàng 1 và 3
+      const res = await apiCall('GET', '/customers/3/orders');
+      const items = res.data?.content || [];
+      document.getElementById('badge-count-orders').textContent = items.length;
+
+      if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Không có đơn hàng nào.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map(o => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3.5 font-bold text-blue-600">#${o.id}</td>
+          <td class="p-3.5 font-semibold text-slate-800">Khách #${o.customerId}</td>
+          <td class="p-3.5 text-slate-600 truncate max-w-xs">${o.shippingAddress}</td>
+          <td class="p-3.5 font-extrabold text-slate-900">${(o.totalAmount || 0).toLocaleString()} đ</td>
+          <td class="p-3.5">${getStatusBadge(o.status)}</td>
+          <td class="p-3.5 text-right">
+            <select onchange="updateOrderStatus(${o.id}, this.value)" class="text-xs font-semibold px-2 py-1 rounded-lg border border-slate-300 bg-white">
+              <option value="PENDING" ${o.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
+              <option value="CONFIRMED" ${o.status === 'CONFIRMED' ? 'selected' : ''}>CONFIRMED</option>
+              <option value="SHIPPED" ${o.status === 'SHIPPED' ? 'selected' : ''}>SHIPPED</option>
+              <option value="DELIVERED" ${o.status === 'DELIVERED' ? 'selected' : ''}>DELIVERED</option>
+              <option value="CANCELLED" ${o.status === 'CANCELLED' ? 'selected' : ''}>CANCELLED (Restock)</option>
+            </select>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadAdminCustomers() {
+      const tbody = document.getElementById('admin-customers-tbody');
+      const res = await apiCall('GET', '/customers?page=1&size=20');
+      const items = res.data?.content || [];
+
+      if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Không có khách hàng nào.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map(c => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3.5 font-mono text-slate-400">${c.id}</td>
+          <td class="p-3.5 font-bold text-slate-800 flex items-center gap-2">
+            <img src="${c.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60'}" class="w-6 h-6 rounded-full object-cover">
+            ${c.fullName}
+          </td>
+          <td class="p-3.5 text-slate-600 font-mono">${c.email}</td>
+          <td class="p-3.5 text-slate-600">${c.phone || 'Chưa cập nhật'}</td>
+          <td class="p-3.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.role === 'ADMIN' ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-100 text-slate-800'}">${c.role}</span></td>
+          <td class="p-3.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">${c.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function handleImageFileSelected(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const preview = document.getElementById('upload-preview');
+          const previewImg = document.getElementById('upload-preview-img');
+          const urlInput = document.getElementById('add-prod-img');
+          if (preview && previewImg) {
+            previewImg.src = e.target.result;
+            preview.classList.remove('hidden');
+          }
+          if (urlInput) {
+            urlInput.value = e.target.result; // Lưu base64 hoặc URL
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function handleProductCreate(e) {
+      e.preventDefault();
+      const name = document.getElementById('add-prod-name').value.trim();
+      const sku = document.getElementById('add-prod-sku').value.trim().toUpperCase();
+      const categoryId = parseInt(document.getElementById('add-prod-cat').value);
+      const price = parseFloat(document.getElementById('add-prod-price').value);
+      const stockQuantity = parseInt(document.getElementById('add-prod-stock').value);
+      const imageUrl = document.getElementById('add-prod-img').value.trim() || 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500';
+      const description = document.getElementById('add-prod-desc').value.trim();
+
+      const payload = { name, sku, categoryId, price, stockQuantity, imageUrl, description };
+      const res = await apiCall('POST', '/products', payload);
+      if (res.status === 201) {
+        showToast(`🎉 Thêm sản phẩm "${name}" thành công!`);
+        closeModal('modal-product-add');
+        document.getElementById('form-product-add').reset();
+        document.getElementById('upload-preview').classList.add('hidden');
+        await loadAdminProducts();
+      } else {
+        const msg = res.data?.message || 'Lỗi thêm sản phẩm';
+        showToast(`❌ Thất bại: ${msg}`, true);
+      }
+    }
+
+    async function deleteProduct(id, name) {
+      if (!confirm(`Bạn có chắc chắn muốn xóa sản phẩm "${name}" (ID: ${id})?`)) return;
+      const res = await apiCall('DELETE', `/products/${id}`);
+      if (res.status === 204 || res.status === 200) {
+        showToast(`Đã xóa sản phẩm "${name}".`);
+        await loadAdminProducts();
+      } else {
+        showToast(`Không thể xóa sản phẩm.`, true);
+      }
+    }
+
+    async function handleCategoryCreate(e) {
+      e.preventDefault();
+      const name = document.getElementById('add-cat-name').value.trim();
+      const code = document.getElementById('add-cat-code').value.trim().toUpperCase();
+      const description = document.getElementById('add-cat-desc').value.trim();
+
+      const res = await apiCall('POST', '/categories', { name, code, description });
+      if (res.status === 201) {
+        showToast(`Thêm danh mục "${name}" thành công!`);
+        closeModal('modal-category-add');
+        await loadAdminCategories();
+      } else {
+        showToast(`Lỗi: ${res.data?.message || 'Không tạo được danh mục'}`, true);
+      }
+    }
+
+    async function updateOrderStatus(orderId, newStatus) {
+      const res = await apiCall('PATCH', `/orders/${orderId}/status`, { status: newStatus });
+      if (res.status === 200) {
+        showToast(`Đơn hàng #${orderId} đã cập nhật sang "${newStatus}".`);
+        await loadAdminOrders();
+      } else {
+        showToast(`Lỗi: ${res.data?.message || 'Không thể đổi trạng thái'}`, true);
+        await loadAdminOrders();
+      }
+    }
+
+    function getStatusBadge(status) {
+      switch (status) {
+        case 'PENDING': return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">PENDING</span>`;
+        case 'CONFIRMED': return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">CONFIRMED</span>`;
+        case 'SHIPPED': return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800">SHIPPED</span>`;
+        case 'DELIVERED': return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">DELIVERED</span>`;
+        case 'CANCELLED': return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">CANCELLED (Hoàn kho)</span>`;
+        default: return status;
+      }
+    }
+  </script>
+</body>
+</html>

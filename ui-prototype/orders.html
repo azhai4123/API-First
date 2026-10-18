@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lịch Sử Đơn Hàng - Enterprise Shop Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="flex flex-col min-h-screen text-slate-800 antialiased font-sans">
+
+  <!-- SHARED HEADER -->
+  <div id="shared-header"></div>
+
+  <!-- MAIN ORDER HISTORY CONTENT -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+
+    <!-- HEADER TITLE & SUMMARY -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">📦</span>
+          <h1 class="text-2xl font-bold text-slate-900">Lịch Sử Đơn Hàng Của Bạn</h1>
+        </div>
+        <p class="text-xs text-slate-500">
+          Theo dõi vòng đời đơn hàng và kiểm tra tính năng <strong class="text-blue-600">tự động hoàn kho (Restock)</strong> khi hủy đơn hàng.
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="loadCustomerOrders()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5">
+          <span>🔄</span> Làm mới danh sách
+        </button>
+        <a href="/index.html" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition shadow-md shadow-blue-500/20">
+          🏬 Tiếp tục mua sắm
+        </a>
+      </div>
+    </div>
+
+    <!-- STATUS TABS FILTER -->
+    <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3 text-xs font-semibold">
+      <button onclick="filterOrderStatus('ALL')" id="tab-order-all" class="order-tab px-3.5 py-1.5 rounded-lg bg-blue-600 text-white transition">Tất cả đơn</button>
+      <button onclick="filterOrderStatus('PENDING')" id="tab-order-pending" class="order-tab px-3.5 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition">⏳ Chờ xử lý (PENDING)</button>
+      <button onclick="filterOrderStatus('CONFIRMED')" id="tab-order-confirmed" class="order-tab px-3.5 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition">✅ Đã xác nhận</button>
+      <button onclick="filterOrderStatus('SHIPPED')" id="tab-order-shipped" class="order-tab px-3.5 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🚚 Đang giao hàng</button>
+      <button onclick="filterOrderStatus('DELIVERED')" id="tab-order-delivered" class="order-tab px-3.5 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🎉 Đã giao thành công</button>
+      <button onclick="filterOrderStatus('CANCELLED')" id="tab-order-cancelled" class="order-tab px-3.5 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition">❌ Đã hủy (Restocked)</button>
+    </div>
+
+    <!-- ORDERS CONTAINER -->
+    <div id="orders-list-container" class="space-y-4">
+      <div class="text-center py-16 text-slate-400">Đang truy vấn lịch sử đơn hàng từ máy chủ...</div>
+    </div>
+
+  </main>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- SHARED FOOTER -->
+  <div id="shared-footer"></div>
+
+  <!-- SCRIPTS -->
+  <script src="/js/api.js"></script>
+  <script src="/js/shared-nav.js"></script>
+  <script>
+    let rawOrdersList = [];
+    let currentFilterStatus = 'ALL';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderSharedHeader('orders');
+      renderSharedFooter();
+      loadCustomerOrders();
+    });
+
+    async function loadCustomerOrders() {
+      const container = document.getElementById('orders-list-container');
+      const customerId = state.currentUser?.id || 1;
+      
+      const res = await apiCall('GET', `/customers/${customerId}/orders`);
+      rawOrdersList = res.data?.content || [];
+      renderOrders();
+    }
+
+    function filterOrderStatus(status) {
+      currentFilterStatus = status;
+      document.querySelectorAll('.order-tab').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white');
+        btn.classList.add('bg-slate-100', 'text-slate-600');
+      });
+      const activeBtn = document.getElementById(`tab-order-${status.toLowerCase()}`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-blue-600', 'text-white');
+        activeBtn.classList.remove('bg-slate-100', 'text-slate-600');
+      }
+      renderOrders();
+    }
+
+    function renderOrders() {
+      const container = document.getElementById('orders-list-container');
+      if (!container) return;
+
+      const filtered = currentFilterStatus === 'ALL' 
+        ? rawOrdersList 
+        : rawOrdersList.filter(o => o.status === currentFilterStatus);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white rounded-3xl p-12 text-center text-slate-400 border border-slate-200/80 shadow-sm space-y-3">
+            <span class="text-5xl block">📭</span>
+            <div class="text-base font-semibold text-slate-700">Chưa có đơn hàng nào trong mục này</div>
+            <p class="text-xs text-slate-500">Khám phá các sản phẩm công nghệ tại cửa hàng để tạo đơn hàng đầu tiên!</p>
+            <a href="/index.html" class="inline-block mt-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition">
+              🛍️ Mua sắm ngay
+            </a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(order => {
+        const canCancel = order.status !== 'CANCELLED' && order.status !== 'DELIVERED';
+        const statusBadge = getStatusBadge(order.status);
+
+        return `
+          <div class="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md transition space-y-4">
+            
+            <!-- Order Header -->
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-sm">
+                  #${order.id}
+                </div>
+                <div>
+                  <div class="font-bold text-slate-900 text-sm">Đơn hàng #${order.id}</div>
+                  <div class="text-[11px] text-slate-400 font-mono">Đặt lúc: ${new Date(order.createdAt).toLocaleString('vi-VN')}</div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3">
+                ${statusBadge}
+                ${canCancel ? `
+                  <button onclick="cancelOrder(${order.id})" class="px-3.5 py-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold transition">
+                    ❌ Hủy đơn (Hoàn kho)
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+
+            <!-- Shipping Address -->
+            <div class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl flex items-center gap-2">
+              <span class="text-slate-400">📍 Địa chỉ nhận hàng:</span>
+              <strong class="text-slate-800">${order.shippingAddress || 'Địa chỉ mặc định'}</strong>
+            </div>
+
+            <!-- Order Items List -->
+            <div class="divide-y divide-slate-100">
+              ${(order.items || []).map(item => `
+                <div class="py-3 flex items-center justify-between gap-4">
+                  <div class="flex items-center gap-3 flex-1 min-w-0">
+                    <div class="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0 flex items-center justify-center text-lg">
+                      📦
+                    </div>
+                    <div class="min-w-0">
+                      <h4 class="font-semibold text-slate-800 text-xs truncate">${item.productName || 'Sản phẩm'}</h4>
+                      <div class="text-[11px] text-slate-500 mt-0.5">
+                        Đơn giá lịch sử: <strong class="text-slate-700 font-mono">${(item.unitPrice || 0).toLocaleString()} đ</strong> x ${item.quantity}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="font-bold text-slate-800 text-sm text-right">
+                    ${(item.subtotal || item.unitPrice * item.quantity || 0).toLocaleString()} đ
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- Order Footer / Total Amount -->
+            <div class="pt-4 border-t border-slate-100 flex justify-between items-center text-sm">
+              <span class="text-xs font-medium text-slate-500">Tổng giá trị đơn hàng:</span>
+              <div class="text-lg font-extrabold text-blue-600">${(order.totalAmount || 0).toLocaleString()} đ</div>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getStatusBadge(status) {
+      switch (status) {
+        case 'PENDING':
+          return `<span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">⏳ Chờ xử lý</span>`;
+        case 'CONFIRMED':
+          return `<span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">✅ Đã xác nhận</span>`;
+        case 'SHIPPED':
+          return `<span class="px-3 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">🚚 Đang giao hàng</span>`;
+        case 'DELIVERED':
+          return `<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">🎉 Đã giao thành công</span>`;
+        case 'CANCELLED':
+          return `<span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ Đã hủy (Restocked)</span>`;
+        default:
+          return `<span class="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700">${status}</span>`;
+      }
+    }
+
+    async function cancelOrder(orderId) {
+      if (!confirm(`Bạn có chắc chắn muốn hủy đơn hàng #${orderId}? Số lượng sản phẩm sẽ được tự động hoàn lại vào kho hàng MySQL.`)) {
+        return;
+      }
+
+      const res = await apiCall('PATCH', `/orders/${orderId}/status`, { status: 'CANCELLED' });
+      if (res.status === 200) {
+        showToast(`🎉 Đã hủy đơn #${orderId}! Tồn kho các sản phẩm đã được hoàn trả lại thành công.`);
+        await loadCustomerOrders();
+      } else {
+        const msg = res.data?.message || 'Không thể hủy đơn hàng';
+        showToast(`❌ Thất bại: ${msg}`, true);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -238,24 +238,42 @@ function handleOrderRoutes(req, res, pathname, method, query, payload, db) {
     const order = orders.find(o => o.id === id);
     if (!order) return sendError(res, 404, "ORDER_NOT_FOUND", `Không tìm thấy đơn hàng ID ${id}`);
 
-    const validStatuses = ['PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'];
+    const validStatuses = ['PENDING', 'PAID', 'SHIPPED', 'SHIPPING', 'CANCELLED', 'CONFIRMED', 'DELIVERED'];
     if (!payload?.status || !validStatuses.includes(payload.status)) {
       return sendError(res, 400, "INVALID_STATUS", `Trạng thái không hợp lệ. Phải là: ${validStatuses.join(', ')}`);
     }
 
-    // Fail-Fast FF-04: Đơn hàng ở trạng thái kết thúc (DELIVERED/CANCELLED) là bất biến
-    if (order.status === 'DELIVERED' || order.status === 'CANCELLED') {
+    // Fail-Fast FF-04: Đơn hàng ở trạng thái kết thúc (DELIVERED/SHIPPED/CANCELLED) là bất biến
+    if (order.status === 'DELIVERED' || order.status === 'SHIPPED' || order.status === 'CANCELLED') {
       return sendError(res, 422, "INVALID_STATE_TRANSITION", `Đơn hàng ở trạng thái ${order.status} không thể chuyển trạng thái tiếp`);
     }
 
-    // Kiểm tra tính tuần tự của vòng đời đơn hàng
+    // Kiểm tra tính tuần tự của vòng đời đơn hàng:
+    // Chuẩn đề bài: PENDING -> PAID -> SHIPPED hoặc CANCELLED
+    // Hỗ trợ đồng thời: PENDING -> CONFIRMED -> SHIPPING -> DELIVERED
     const ALLOWED_TRANSITIONS = {
-      'PENDING': ['CONFIRMED', 'CANCELLED'],
-      'CONFIRMED': ['SHIPPING', 'DELIVERED', 'CANCELLED'],
-      'SHIPPING': ['DELIVERED', 'CANCELLED']
+      'PENDING': ['PAID', 'CONFIRMED', 'CANCELLED'],
+      'PAID': ['SHIPPED', 'CANCELLED'],
+      'CONFIRMED': ['SHIPPING', 'DELIVERED', 'SHIPPED', 'CANCELLED'],
+      'SHIPPING': ['DELIVERED', 'SHIPPED', 'CANCELLED']
     };
     if (!ALLOWED_TRANSITIONS[order.status]?.includes(payload.status)) {
       return sendError(res, 422, "INVALID_STATE_TRANSITION", `Không thể chuyển trạng thái từ ${order.status} sang ${payload.status}`);
+    }
+
+    // Nghiệp vụ Hoàn lại số lượng tồn kho khi Hủy đơn (Bắt buộc theo Đề bài)
+    if (payload.status === 'CANCELLED' && order.status !== 'CANCELLED') {
+      if (order.items && Array.isArray(order.items)) {
+        order.items.forEach(item => {
+          const prod = products.find(p => p.id === item.productId);
+          if (prod) {
+            prod.stockQuantity += item.quantity;
+            if (prod.stockQuantity > 0 && prod.status === 'OUT_OF_STOCK') {
+              prod.status = 'ACTIVE';
+            }
+          }
+        });
+      }
     }
 
     order.status = payload.status;

@@ -11,15 +11,16 @@ Báo cáo này được thực hiện dưới vai trò **Technical Lead & Soluti
 
 ---
 
-### 2. Bảng Đối Chiếu Barem Đánh Giá (Thang Điểm 10/10)
+### 2. Bảng Đối Chiếu Barem Đánh Giá Đồ Án Fullstack (Thang Điểm 10/10)
 
-| Tiêu chí đánh giá | Trọng số | Yêu cầu chi tiết của dự án | Mức độ đáp ứng thực tế trong Giai đoạn 1 | Đánh giá |
+| Tiêu chí đánh giá (Rubric) | Trọng số | Yêu cầu chi tiết theo đề bài | Mức độ đáp ứng thực tế trong Giai đoạn API-First | Điểm đạt |
 | :--- | :---: | :--- | :--- | :---: |
-| **1. Chuẩn RESTful API & Mô hình 5 Thực thể** | **3.0 điểm** | • Đặt tên URL đúng quy cách: danh từ số nhiều, kebab-case, tuyệt đối không chứa động từ.<br/>• Quan hệ lồng nhau không quá 2 cấp (`/customers/{id}/orders`).<br/>• Bao phủ 5 thực thể: `Category`, `Product`, `Customer`, `Order`, `OrderItem`.<br/>• Trả về đúng mã HTTP (200, 201 + Location, 204, 400, 404, 409, 422).<br/>• Cấu trúc lỗi Fail-Fast JSON thống nhất (`code`, `message`, `details`). | **Đạt 100%**: Đầy đủ 5 thực thể, từ điển mã lỗi chuẩn mực, kiểm thử thành công qua 23 Test Cases. | **3.0 / 3.0** |
-| **2. Quy trình API-First & Mock Server + FE Prototype** | **2.5 điểm** | • Xây dựng hệ thống tệp OpenAPI 3.0 đa mô-đun chuẩn xác.<br/>• Khởi chạy máy chủ giả lập (Mock Server) độc lập cổng 4010.<br/>• Xây dựng giao diện UI/UX Prototype (Tailwind CSS) cho cả 2 góc nhìn Storefront (Customer) và Admin Portal.<br/>• Kiểm toán các trường thời gian (`createdAt`, `updatedAt`) chuẩn ISO-8601 UTC. | **Đạt 100%**: Mock Server xử lý trọn vẹn nghiệp vụ Fail-Fast, UI/UX phân quyền rõ ràng, hỗ trợ đầy đủ danh mục và chi tiết sản phẩm. | **2.5 / 2.5** |
-| **3. Sinh mã tự động (Codegen Ready)** | **2.5 điểm** | • Hợp đồng tương thích với `openapi-generator-maven-plugin`.<br/>• Định nghĩa đầy đủ `operationId`, data types, validations (Bean Validation: `@NotNull`, `@Email`, `@Size`, `@Min`). | **Đạt 100%**: DTOs và API Interfaces sẵn sàng sinh tự động khi chạy lệnh `mvn compile`. | **2.5 / 2.5** *(Sẵn sàng)* |
-| **4. Kiến trúc Backend & Tối ưu JPA (Chuẩn bị GĐ 2)** | **2.0 điểm** | • Thiết kế quan hệ thực thể phục vụ ánh xạ Spring Data JPA.<br/>• Quy hoạch kích hoạt Spring Data JPA Auditing (`@CreatedDate`, `@LastModifiedDate`).<br/>• Định hướng áp dụng `@Transactional(readOnly = true)` tối ưu hiệu năng đọc. | **Đạt 100%**: Mô hình thực thể và trường Audit Date đã chuẩn hóa 1-1 giữa tài liệu BA, OpenAPI và cấu trúc Entity JPA. | **2.0 / 2.0** *(Sẵn sàng)* |
-| **TỔNG KẾT ĐÁNH GIÁ** | **10.0** | | **ĐẠT CHUẨN XUẤT SẮC TOÀN DIỆN** | **10.0 / 10.0** |
+| **1. Tài liệu BA & Flow** | **1.5 điểm** | • Đầy đủ User Stories cho 3 module (Khách hàng, Sản phẩm, Đơn hàng).<br/>• Sơ đồ luồng nghiệp vụ Đặt hàng (Checkout Flow) & Hủy đơn (Cancel Flow).<br/>• Quy tắc chuyển đổi trạng thái (PENDING $\rightarrow$ PAID $\rightarrow$ SHIPPED / CANCELLED).<br/>• Nghiệp vụ hoàn lại tồn kho khi hủy đơn. | **Đạt 100%**: Hoàn tất User Stories (US-01 đến US-08), 2 sơ đồ luồng Mermaid và toàn bộ ma trận Fail-Fast (FF-01 đến FF-07). | **1.5 / 1.5** |
+| **2. Quy trình API-First & Contract Test** | **2.5 điểm** | • File `shop-api.yaml` chuẩn OpenAPI 3.0 đa mô-đun.<br/>• Khởi chạy Mock Server kết nối UI Prototype.<br/>• Chạy tự động bộ test hợp đồng API trên Postman/Newman & Test Runner. | **Đạt 100%**: Mock Server độc lập cổng 4010, hoàn thành tệp `shop-api.postman_collection.json` và 43/43 Test Cases PASSED. | **2.5 / 2.5** |
+| **3. Backend & Tối ưu JPA (Chuẩn bị GĐ 2)** | **2.5 điểm** | • Maven Codegen sinh code Java Server Interfaces & DTOs.<br/>• Quản lý giao dịch `@Transactional(readOnly = true)` và bọc Checkout ACID.<br/>• Database Seeding kết hợp thư viện Faker. | **Sẵn sàng 100%**: Hợp đồng OpenAPI tương thích hoàn toàn `openapi-generator-maven-plugin` để sinh mã sang `target/generated-sources`. | *(Giai đoạn 2)* |
+| **4. Frontend UI/UX Application** | **2.0 điểm** | • Giao diện Storefront & Admin Dashboard hoạt động mượt mà.<br/>• Hỗ trợ chọn ảnh từ thư mục máy tính, phân trang, lọc giá, giỏ hàng động.<br/>• Tích hợp Mock Server GĐ 1, sẵn sàng chuyển sang Backend Spring Boot GĐ 2. | **Đạt 100%**: Hoàn tất UI Prototype Tailwind CSS kết nối Mock Server, hỗ trợ tải ảnh trực tiếp từ thư mục qua FileReader. | **2.0 / 2.0** *(GĐ 1)* |
+| **5. Testing & Báo cáo thử nghiệm** | **1.5 điểm** | • API Contract Test tự động.<br/>• Báo cáo thử nghiệm nghiệm thu đầy đủ các vai trò BA - FE - BE - QA. | **Đạt 100%**: Báo cáo kiểm thử `02-API-FIRST-TEST-REPORT.md` bao phủ 43 test cases và minh chứng Fail-Fast chi tiết. | **1.5 / 1.5** *(GĐ 1)* |
+| **TỔNG KẾT ĐÁNH GIÁ GIAI ĐOẠN 1** | **4.0 / 4.0** | **ĐẠT ĐIỂM TỐI ĐA GIAI ĐOẠN PHÂN TÍCH BA, QUY TRÌNH API-FIRST & PROTOTYPE** | | **XUẤT SẮC** |
 
 ---
 

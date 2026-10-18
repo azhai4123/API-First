@@ -1,0 +1,97 @@
+# =========================================================================
+# AUTH SCHEMAS: ĐĂNG NHẬP, ĐĂNG KÝ & PHÂN QUYỀN (JWT READY)
+# =========================================================================
+LoginRequest:
+  type: object
+  description: Yêu cầu đăng nhập xác thực tài khoản
+  required:
+    - email
+    - password
+  properties:
+    email:
+      type: string
+      format: email
+      example: "admin@shop.com"
+    password:
+      type: string
+      minLength: 6
+      example: "admin123"
+
+RegisterRequest:
+  type: object
+  description: Yêu cầu đăng ký tài khoản khách hàng mới
+  required:
+    - fullName
+    - email
+    - password
+    - phone
+    - address
+  properties:
+    fullName:
+      type: string
+      minLength: 2
+      maxLength: 100
+      example: "Nguyen Van A"
+    email:
+      type: string
+      format: email
+      example: "nguyenvana@example.com"
+    password:
+      type: string
+      minLength: 6
+      maxLength: 50
+      example: "pass123"
+    phone:
+      type: string
+      pattern: "^[0-9]{10,11}$"
+      example: "0901234567"
+    address:
+      type: string
+      minLength: 5
+      maxLength: 255
+      example: "72 Le Thanh Ton, Quan 1, TP.HCM"
+    avatarUrl:
+      type: string
+      format: uri
+      example: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
+
+AuthUser:
+  type: object
+  description: Thông tin người dùng sau khi xác thực thành công
+  properties:
+    id:
+      type: integer
+      format: int64
+      example: 1
+    fullName:
+      type: string
+      example: "Nguyen Van A"
+    email:
+      type: string
+      format: email
+      example: "nguyenvana@example.com"
+    role:
+      type: string
+      enum: [CUSTOMER, ADMIN]
+      example: "CUSTOMER"
+    avatarUrl:
+      type: string
+      example: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
+
+AuthResponse:
+  type: object
+  description: Kết quả phản hồi đăng nhập / đăng ký thành công kèm Access Token
+  properties:
+    token:
+      type: string
+      description: Bearer JWT Token dùng cho Authorization Header
+      example: "mock-jwt-token-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    tokenType:
+      type: string
+      example: "Bearer"
+    expiresIn:
+      type: integer
+      example: 86400
+    user:
+      $ref: '#/AuthUser'
+

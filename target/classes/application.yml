@@ -1,0 +1,43 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+
+spring:
+  application:
+    name: shop-api
+  datasource:
+    url: jdbc:mysql://localhost:3306/shop_ecommerce?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: ""
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+    open-in-view: false
+  jackson:
+    time-zone: UTC
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+    serialization:
+      write-dates-as-timestamps: false
+
+jwt:
+  secret: dGhpcy1pcy1hLXNlY3VyZS1hbmQtbG9uZy1qd3Qtc2VjcmV0LWtleS1mb3Itc2hvcC1lY29tbWVyY2UtYXBpLTIwMjY=
+  expiration: 86400000 # 24 hours
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    com.shop: DEBUG
+    org.springframework.security: INFO

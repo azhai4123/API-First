@@ -1,0 +1,439 @@
+{
+  "info": {
+    "name": "Enterprise Shop RESTful API - Contract & Fail-Fast Test Suite",
+    "_postman_id": "7b8c3a1e-5f92-4d2b-98e1-shop-api-collection",
+    "description": "Bộ sưu tập kiểm thử API-First & Contract Testing tự động theo chuẩn đồ án Fullstack Spring Boot 3.x. Bao gồm kiểm thử chức năng, phân quyền, kiểm tra Audit Date ISO-8601 UTC và Ma trận Fail-Fast (FF-01 đến FF-07).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4010/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication & Users",
+      "item": [
+        {
+          "name": "POST /auth/register - Đăng ký khách hàng mới",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Trần Thị Bích\",\n  \"email\": \"bich.tran@example.com\",\n  \"password\": \"secure123\",\n  \"phone\": \"0987654321\",\n  \"address\": \"123 Nguyễn Huệ, Quận 1, TP.HCM\",\n  \"avatarUrl\": \"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Response contains valid JWT token and user info', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('token');",
+                  "    pm.expect(json.user).to.have.property('id');",
+                  "    pm.expect(json.user.role).to.eql('CUSTOMER');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /auth/login - Đăng nhập tài khoản Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@shop.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Save JWT Token for next requests', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('authToken', json.token);",
+                  "    pm.expect(json.user.role).to.eql('ADMIN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /customers - Phân trang danh sách khách hàng",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/customers?page=0&size=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "5" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Pagination structure matches PageMetadata', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('content');",
+                  "    pm.expect(json).to.have.property('page');",
+                  "    pm.expect(json.page.size).to.eql(5);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /customers/{id}/orders - Xem lịch sử đơn hàng của khách hàng",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/customers/1/orders", "host": ["{{baseUrl}}"], "path": ["customers", "1", "orders"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns list of orders', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(Array.isArray(json)).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Categories",
+      "item": [
+        {
+          "name": "GET /categories - Lấy danh mục sản phẩm",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/categories", "host": ["{{baseUrl}}"], "path": ["categories"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Has createdAt & updatedAt format ISO-8601', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json[0]).to.have.property('createdAt');",
+                  "    pm.expect(json[0].createdAt).to.match(/\\d{4}-\\d{2}-\\d{2}T/);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /categories - Thêm danh mục mới (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"LAPTOP\",\n  \"name\": \"Máy tính xách tay Laptop\",\n  \"description\": \"Laptop văn phòng, đồ họa và gaming chuyên nghiệp\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/categories", "host": ["{{baseUrl}}"], "path": ["categories"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created with Location', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.expect(pm.response.headers.get('Location')).to.not.be.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /categories/{id} - Fail-Fast Cấm xóa danh mục đang có hàng",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/categories/1", "host": ["{{baseUrl}}"], "path": ["categories", "1"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test('Error code is CATEGORY_IN_USE', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql('CATEGORY_IN_USE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Products",
+      "item": [
+        {
+          "name": "GET /products - Danh sách sản phẩm (Lọc & Phân trang)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products?page=0&size=5&stock=in_stock",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "5" },
+                { "key": "stock", "value": "in_stock" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Products have valid prices and stock', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.content.length).to.be.above(0);",
+                  "    pm.expect(json.content[0].stockQuantity).to.be.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /products - Thêm sản phẩm mới (chọn ảnh)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": 1,\n  \"name\": \"Chuột công thái học Logitech MX Master 3S\",\n  \"sku\": \"MS-LOGI-MX3S\",\n  \"price\": 2490000,\n  \"stockQuantity\": 15,\n  \"imageUrl\": \"https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=500\",\n  \"description\": \"Cảm biến quang học 8K DPI siêu tĩnh âm\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Response includes SKU and ISO createdAt', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.sku).to.eql('MS-LOGI-MX3S');",
+                  "    pm.expect(json.createdAt).to.not.be.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /products - Fail-Fast CategoryId không tồn tại",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": 9999,\n  \"name\": \"Bàn di chuột cơ bản\",\n  \"sku\": \"PAD-TEST-99\",\n  \"price\": 99000,\n  \"stockQuantity\": 10,\n  \"imageUrl\": \"https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404 CATEGORY_NOT_FOUND', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql('CATEGORY_NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Orders & Fail-Fast Workflows",
+      "item": [
+        {
+          "name": "POST /orders - Đặt hàng thành công (Checkout trừ kho)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": 2,\n  \"shippingAddress\": \"72 Lê Thánh Tôn, Bến Nghé, Quận 1, TP.HCM\",\n  \"items\": [\n    { \"productId\": 101, \"quantity\": 1 }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Initial order status is PENDING', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('PENDING');",
+                  "    pm.expect(json.items[0]).to.have.property('unitPrice');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /orders - Fail-Fast (FF-01) Hết hàng hoặc thiếu số lượng",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": 2,\n  \"shippingAddress\": \"Hà Nội\",\n  \"items\": [\n    { \"productId\": 101, \"quantity\": 99999 }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql('OUT_OF_STOCK');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /orders/{id}/status - Cập nhật trạng thái sang PAID",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PAID\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/orders/5001/status", "host": ["{{baseUrl}}"], "path": ["orders", "5001", "status"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('PAID');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /orders/{id}/status - Hủy đơn & Tự động Hoàn kho",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CANCELLED\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/orders/5001/status", "host": ["{{baseUrl}}"], "path": ["orders", "5001", "status"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('CANCELLED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

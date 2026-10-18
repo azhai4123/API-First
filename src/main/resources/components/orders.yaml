@@ -94,9 +94,9 @@ OrderStatusUpdateRequest:
   properties:
     status:
       type: string
-      enum: [PENDING, CONFIRMED, SHIPPING, DELIVERED, CANCELLED]
-      description: Trạng thái mới của đơn hàng
-      example: "CONFIRMED"
+      enum: [PENDING, PAID, SHIPPED, CANCELLED, CONFIRMED, DELIVERED]
+      description: "Trạng thái mới của đơn hàng (Theo chuẩn: PENDING -> PAID -> SHIPPED hoặc CANCELLED)"
+      example: "PAID"
 
 OrderResponse:
   type: object
@@ -125,7 +125,7 @@ OrderResponse:
       example: 3700000.00
     status:
       type: string
-      enum: [PENDING, CONFIRMED, SHIPPING, DELIVERED, CANCELLED]
+      enum: [PENDING, PAID, SHIPPED, CANCELLED, CONFIRMED, DELIVERED]
       example: "PENDING"
     shippingAddress:
       type: string

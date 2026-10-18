@@ -3,333 +3,148 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Enterprise Shop API - UI/UX Prototype</title>
+  <title>Cửa Hàng Trực Tuyến - Enterprise Shop Platform</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body class="flex flex-col min-h-screen text-slate-800 antialiased">
+<body class="flex flex-col min-h-screen text-slate-800 antialiased font-sans">
 
-  <!-- TOP HEADER & NAVBAR -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <span class="text-2xl">🛍️</span>
-        <div>
-          <div class="font-bold text-slate-900 leading-tight">Shop API Platform</div>
-          <div class="text-[11px] text-slate-500 font-mono">OpenAPI 3.0.3 Contract Ready</div>
+  <!-- SHARED HEADER -->
+  <div id="shared-header"></div>
+
+  <!-- MAIN SHOPPING CONTENT -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+
+    <!-- HERO BANNER -->
+    <section class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 p-8 text-white shadow-xl">
+      <div class="relative z-10 max-w-2xl space-y-3">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md text-blue-100 uppercase tracking-wide">
+          ✨ Phiên bản RESTful 2.0 (Spring Boot & MySQL)
+        </span>
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+          Thiết Bị Công Nghệ & Phụ Kiện Cao Cấp
+        </h1>
+        <p class="text-sm text-blue-100 font-normal leading-relaxed">
+          Trải nghiệm đặt hàng thời gian thực kết nối trực tiếp với CSDL MySQL qua API-First Backend. Quản lý kho hàng chuẩn giao dịch ACID.
+        </p>
+        <div class="pt-2 flex flex-wrap gap-3">
+          <a href="/orders.html" class="px-5 py-2.5 rounded-xl bg-white text-blue-800 text-xs font-bold hover:bg-blue-50 transition shadow-md flex items-center gap-1.5">
+            <span>📦</span> Theo dõi Đơn hàng của tôi
+          </a>
+          <button onclick="toggleCartDrawer()" class="px-5 py-2.5 rounded-xl bg-blue-500/30 border border-white/20 text-white text-xs font-semibold hover:bg-blue-500/40 transition">
+            🛒 Xem giỏ hàng
+          </button>
         </div>
       </div>
+      <div class="absolute -right-12 -bottom-12 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none"></div>
+    </section>
 
-      <!-- Quick KPI Stats -->
-      <div class="hidden md:flex items-center gap-4 text-xs font-medium">
-        <div class="px-3 py-1 bg-slate-100 rounded-lg">Khách: <strong id="stat-cust" class="text-blue-600">0</strong></div>
-        <div class="px-3 py-1 bg-slate-100 rounded-lg">Sản phẩm: <strong id="stat-prod" class="text-blue-600">0</strong></div>
-        <div class="px-3 py-1 bg-rose-50 text-rose-700 rounded-lg">Hết hàng: <strong id="stat-out">0</strong></div>
-        <div class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg">Đơn: <strong id="stat-orders">0</strong></div>
-      </div>
-
-      <!-- View Switcher & Auth Section -->
-      <div class="flex items-center gap-3">
-        <button id="view-toggle-btn" onclick="toggleView()" class="hidden text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 transition shadow-sm"></button>
-        <button onclick="openModal('drawer-cart'); renderCartDrawer();" class="relative p-2 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition"><span class="text-lg">🛒</span><span id="cart-badge" class="hidden absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">0</span></button>
-        <div id="user-display"></div>
-      </div>
-    </div>
-  </header>
-
-  <!-- MAIN CONTAINER -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 space-y-6">
-    <!-- VIEW 1: BUYER STOREFRONT (NGƯỜI MUA) -->
-    <div id="view-buyer" class="space-y-6">
-      <div class="bg-gradient-to-r from-blue-700 to-indigo-800 rounded-2xl p-6 text-white shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
-        <div><span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/20">GÓC NHÌN NGƯỜI MUA</span><h2 class="text-2xl font-bold mt-2">Trải Nghiệm Mua Sắm Trực Quan</h2><p class="text-blue-100 text-xs mt-1">Kết nối Mock Server <code>POST /orders</code> và kiểm tra trừ kho tự động</p></div>
-        <button onclick="openModal('modal-buyer-orders'); loadBuyerOrders();" class="px-4 py-2 bg-white text-blue-800 text-xs font-semibold rounded-lg hover:bg-blue-50 transition shadow">📦 Đơn hàng của tôi</button>
-      </div>
-
-      <!-- Buyer Search & Filter Toolbar -->
-      <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200">
-        <div class="flex flex-wrap items-center gap-2 flex-1">
-          <input type="text" id="buyer-search" placeholder="🔍 Tìm theo tên hoặc mã sản phẩm..." oninput="loadBuyerCatalog()" class="w-full sm:w-64 px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <select id="buyer-cat" onchange="loadBuyerCatalog()" class="px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="ALL">📁 Tất cả danh mục</option>
-            <option value="Phụ kiện">Phụ kiện</option>
-            <option value="Màn hình">Màn hình</option>
-            <option value="Âm thanh">Âm thanh</option>
-          </select>
+    <!-- SEARCH & FILTER TOOLBAR -->
+    <section class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+      
+      <!-- Search Box & Category Select -->
+      <div class="flex flex-wrap items-center gap-3 w-full md:w-auto flex-1">
+        <div class="relative flex-1 sm:w-80">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 text-sm">🔍</span>
+          <input type="text" id="buyer-search" placeholder="Tìm theo tên sản phẩm hoặc mã SKU..." oninput="loadBuyerCatalog()" class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50">
         </div>
-        <button onclick="loadBuyerCatalog()" class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg">🔄 Tải lại</button>
+
+        <select id="buyer-cat" onchange="loadBuyerCatalog()" class="px-3.5 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700">
+          <option value="ALL">📁 Tất cả danh mục</option>
+          <!-- Dynamic Categories -->
+        </select>
+
+        <select id="buyer-stock" onchange="loadBuyerCatalog()" class="px-3.5 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium text-slate-700">
+          <option value="ALL">📦 Tồn kho: Tất cả</option>
+          <option value="in_stock">Chỉ sản phẩm còn hàng</option>
+          <option value="out_of_stock">Sản phẩm hết hàng (Test 422)</option>
+        </select>
       </div>
 
-      <!-- Buyer Products Grid -->
-      <div id="buyer-products-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <!-- Sort & Refresh Controls -->
+      <div class="flex items-center gap-2.5 w-full md:w-auto justify-end">
+        <select id="buyer-sort" onchange="loadBuyerCatalog()" class="px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700">
+          <option value="">Sắp xếp: Mới nhất</option>
+          <option value="price,asc">Giá: Thấp đến Cao</option>
+          <option value="price,desc">Giá: Cao đến Thấp</option>
+          <option value="name,asc">Tên: A - Z</option>
+        </select>
+        <button onclick="loadBuyerCatalog()" class="px-3 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-1">
+          <span>🔄</span> Làm mới
+        </button>
+      </div>
+    </section>
+
+    <!-- PRODUCT CATALOG GRID -->
+    <section>
+      <div id="buyer-products-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
         <!-- Injected via buyer.js -->
+        <div class="col-span-full py-16 text-center text-slate-400">Đang tải sản phẩm từ máy chủ MySQL...</div>
       </div>
-    </div>
+    </section>
 
-    <!-- ========================================== -->
-    <!-- VIEW 2: ADMIN PORTAL (QUẢN TRỊ VIÊN)       -->
-    <!-- ========================================== -->
-    <div id="view-admin" class="hidden space-y-6">
-      <div class="bg-slate-900 rounded-2xl p-6 text-white shadow-md flex justify-between items-center">
-        <div>
-          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/30 text-blue-300">GÓC NHÌN QUẢN TRỊ (ADMIN)</span>
-          <h2 class="text-2xl font-bold mt-2">Bảng Điều Khiển Quản Lý Hệ Thống</h2>
-          <p class="text-slate-400 text-xs mt-1">Toàn quyền CRUD Sản phẩm, Quản lý Vòng đời Đơn hàng & Hồ sơ Khách hàng</p>
-        </div>
-      </div>
+    <!-- PAGINATION -->
+    <section id="pagination-container" class="flex justify-center items-center gap-2 pt-4">
+      <!-- Dynamic Pagination buttons -->
+    </section>
 
-      <!-- Admin Navigation Tabs -->
-      <div class="border-b border-slate-200 flex gap-4 text-xs font-semibold">
-        <button id="btn-tab-products" onclick="switchAdminTab('products')" class="admin-tab-btn pb-3 border-b-2 border-blue-600 text-blue-600">📦 Quản lý Sản phẩm (/products)</button>
-        <button id="btn-tab-categories" onclick="switchAdminTab('categories')" class="admin-tab-btn pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700">📁 Quản lý Danh mục (/categories)</button>
-        <button id="btn-tab-orders" onclick="switchAdminTab('orders')" class="admin-tab-btn pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700">🛒 Quản lý Đơn hàng (/orders)</button>
-        <button id="btn-tab-customers" onclick="switchAdminTab('customers')" class="admin-tab-btn pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-700">👥 Khách hàng (/customers)</button>
-      </div>
-
-      <!-- Tab: Admin Categories -->
-      <div id="pane-categories" class="admin-tab-pane hidden space-y-4">
-        <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-200">
-          <span class="text-xs text-slate-500 font-medium">Danh mục quản lý phân loại & liên kết khóa ngoại với Sản phẩm</span>
-          <button onclick="openModal('modal-category-add')" class="px-3 py-1.5 bg-blue-600 text-white font-medium text-xs rounded-lg hover:bg-blue-700">➕ Thêm danh mục</button>
-        </div>
-        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-          <table id="admin-cats-table" class="w-full text-left text-xs">
-            <thead class="bg-slate-50 text-slate-500 border-b"><tr><th class="p-3 w-16">ID</th><th class="p-3">Tên danh mục</th><th class="p-3">Mã Code</th><th class="p-3">Trạng thái</th><th class="p-3 text-right">Thao tác</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Tab: Admin Products -->
-      <div id="pane-products" class="admin-tab-pane space-y-4">
-        <div class="flex flex-wrap justify-between items-center gap-3 bg-white p-3 rounded-xl border border-slate-200">
-          <div class="flex flex-wrap items-center gap-2">
-            <input type="text" id="admin-prod-search" placeholder="🔍 Tìm kiếm..." oninput="loadAdminProducts(true)" class="px-3 py-1.5 text-xs rounded-lg border border-slate-300">
-            <select id="admin-prod-cat" onchange="loadAdminProducts(true)" class="px-3 py-1.5 text-xs rounded-lg border border-slate-300">
-              <option value="ALL">Tất cả danh mục</option>
-              <option value="Phụ kiện">Phụ kiện</option>
-              <option value="Màn hình">Màn hình</option>
-              <option value="Âm thanh">Âm thanh</option>
-            </select>
-            <select id="admin-prod-stock" onchange="loadAdminProducts(true)" class="px-3 py-1.5 text-xs rounded-lg border border-slate-300">
-              <option value="all">Tất cả tồn kho</option>
-              <option value="in_stock">Còn hàng</option>
-              <option value="out_of_stock">Hết hàng</option>
-            </select>
-          </div>
-          <button onclick="openModal('modal-product-add')" class="px-3 py-1.5 bg-blue-600 text-white font-medium text-xs rounded-lg hover:bg-blue-700">➕ Thêm sản phẩm</button>
-        </div>
-        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-          <table id="admin-prod-table" class="w-full text-left text-xs">
-            <thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="p-3 w-16">ID</th><th class="p-3">Sản phẩm</th><th class="p-3">Danh mục</th><th class="p-3">Giá bán</th><th class="p-3">Tồn kho</th><th class="p-3 text-right">Thao tác</th></tr></thead>
-            <tbody></tbody>
-          </table>
-          <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs">
-            <span id="admin-prod-page-current" class="text-slate-500 font-medium">Trang 1 / 1</span>
-            <div class="flex gap-2">
-              <button onclick="prevAdminProductPage()" class="px-2.5 py-1 rounded bg-white border border-slate-300 hover:bg-slate-100">◀ Trước</button>
-              <button onclick="nextAdminProductPage()" class="px-2.5 py-1 rounded bg-white border border-slate-300 hover:bg-slate-100">Sau ▶</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tab: Admin Orders -->
-      <div id="pane-orders" class="admin-tab-pane hidden space-y-4">
-        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-          <table id="admin-orders-table" class="w-full text-left text-xs">
-            <thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="p-3">Mã đơn</th><th class="p-3">Khách hàng</th><th class="p-3">Tổng tiền</th><th class="p-3">Trạng thái</th><th class="p-3">Ngày tạo</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Tab: Admin Customers -->
-      <div id="pane-customers" class="admin-tab-pane hidden space-y-4">
-        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-          <table id="admin-cust-table" class="w-full text-left text-xs">
-            <thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="p-3">ID</th><th class="p-3">Khách hàng</th><th class="p-3">Vai trò</th><th class="p-3">Số điện thoại</th><th class="p-3">Trạng thái</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
   </main>
 
-  <!-- LIVE API INSPECTOR PANEL (FIXED FOOTER) -->
-  <div class="bg-slate-900 border-t border-slate-800 text-slate-300 p-2.5 text-xs sticky bottom-0 z-20 shadow-2xl">
-    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-1 mb-1.5">
-      <div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-emerald-400 pulse-active"></div><span class="font-bold text-white tracking-wide">RESTful API LIVE INSPECTOR</span></div>
-      <div id="inspector-summary" class="text-slate-400 font-mono text-[11px]">Sẵn sàng giám sát API Calls</div>
-    </div>
-    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-2">
-      <div><div class="text-[10px] font-bold text-slate-500 mb-0.5">REQUEST BODY</div><pre id="req-log" class="log-box">// Chưa có request</pre></div>
-      <div><div class="text-[10px] font-bold text-slate-500 mb-0.5">RESPONSE STATUS & BODY</div><pre id="res-log" class="log-box">// Chưa có response</pre></div>
-    </div>
-  </div>
-
-  <!-- CART SLIDE-OVER DRAWER -->
-  <div id="drawer-cart" class="hidden fixed inset-0 z-50 bg-black/40 flex justify-end">
-    <div class="w-full max-w-sm bg-white h-full flex flex-col shadow-2xl p-4">
-      <div class="flex justify-between items-center pb-3 border-b border-slate-200"><span class="font-bold text-base text-slate-800">🛒 Giỏ hàng</span><button onclick="closeModal('drawer-cart')" class="text-slate-400 font-bold">✕</button></div>
-      <div id="cart-items-container" class="flex-1 overflow-y-auto py-2"></div>
-      <div class="border-t border-slate-200 pt-3 space-y-3">
-        <div class="flex justify-between font-bold text-sm"><span>Tổng thanh toán:</span><span id="cart-total-price" class="text-blue-600">0 đ</span></div>
-        <button onclick="handleCheckout()" class="w-full py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition">🚀 Đặt hàng (POST /orders)</button>
+  <!-- PRODUCT DETAIL MODAL -->
+  <div id="modal-product-detail" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl animate-fade-in flex flex-col md:flex-row">
+      <div class="md:w-1/2 bg-slate-100 h-64 md:h-auto overflow-hidden relative">
+        <img id="detail-img" src="" alt="" class="w-full h-full object-cover">
+        <span id="detail-badge" class="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-bold shadow-sm"></span>
       </div>
-    </div>
-  </div>
-
-  <!-- MODAL: LOGIN -->
-  <div id="modal-login" onclick="closeModalOnBackdrop(event, 'modal-login')" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl max-w-sm w-full p-5 space-y-4 shadow-xl">
-      <div class="flex justify-between items-center"><span class="font-bold text-slate-800">🔐 Đăng nhập</span><button onclick="closeModal('modal-login')" class="text-slate-400 font-bold">✕</button></div>
-      <form onsubmit="handleLogin(event)" class="space-y-3 text-xs">
-        <div><label class="font-semibold block mb-1">Email</label><input type="email" id="login-email" class="w-full p-2 border rounded" required placeholder="admin@shop.com"></div>
-        <div><label class="font-semibold block mb-1">Mật khẩu</label><input type="password" id="login-password" class="w-full p-2 border rounded" required placeholder="••••••"></div>
-        <div class="flex gap-2 pt-1 text-[11px]"><span class="text-slate-400">Chọn:</span><button type="button" onclick="quickLogin('ADMIN')" class="text-blue-600 hover:underline">Admin</button><button type="button" onclick="quickLogin('CUSTOMER')" class="text-blue-600 hover:underline">Khách</button></div>
-        <button type="submit" class="w-full py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700">Đăng nhập</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: REGISTER -->
-  <div id="modal-register" onclick="closeModalOnBackdrop(event, 'modal-register')" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl max-w-sm w-full p-5 space-y-4 shadow-xl">
-      <div class="flex justify-between items-center"><span class="font-bold text-slate-800">📝 Đăng ký tài khoản</span><button onclick="closeModal('modal-register')" class="text-slate-400 font-bold">✕</button></div>
-      <form onsubmit="handleRegister(event)" class="space-y-2 text-xs">
-        <div><label class="font-semibold">Họ tên *</label><input type="text" id="reg-name" class="w-full p-1.5 border rounded" required placeholder="Nguyễn Văn An"></div>
-        <div><label class="font-semibold">Email *</label><input type="email" id="reg-email" class="w-full p-1.5 border rounded" required placeholder="an@example.com"></div>
-        <div><label class="font-semibold">Mật khẩu *</label><input type="password" id="reg-pass" class="w-full p-1.5 border rounded" required minlength="6" placeholder="••••••"></div>
-        <div class="grid grid-cols-2 gap-2"><div><label class="font-semibold">SĐT *</label><input type="tel" id="reg-phone" class="w-full p-1.5 border rounded" required placeholder="0901234567"></div><div><label class="font-semibold">Avatar</label><input type="url" id="reg-avatar" class="w-full p-1.5 border rounded" placeholder="https://..."></div></div>
-        <div><label class="font-semibold">Địa chỉ *</label><input type="text" id="reg-address" class="w-full p-1.5 border rounded" required placeholder="72 Lê Thánh Tôn, Q1"></div>
-        <button type="submit" class="w-full py-2 mt-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700">Tạo tài khoản</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: ADD PRODUCT -->
-  <div id="modal-product-add" onclick="closeModalOnBackdrop(event, 'modal-product-add')" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl max-w-md w-full p-5 space-y-3 shadow-xl">
-      <div class="flex justify-between items-center"><span class="font-bold text-slate-800">📦 Thêm Sản phẩm</span><button onclick="closeModal('modal-product-add')" class="text-slate-400 font-bold">✕</button></div>
-      <form onsubmit="handleCreateProduct(event)" class="space-y-2 text-xs">
-        <div><label class="font-semibold">Tên sản phẩm *</label><input type="text" id="new-prod-name" class="w-full p-1.5 border rounded" required placeholder="Bàn phím cơ..."></div>
-        <div class="grid grid-cols-2 gap-2"><div><label class="font-semibold">SKU *</label><input type="text" id="new-prod-sku" class="w-full p-1.5 border rounded" required placeholder="KB-KEY-01"></div><div><label class="font-semibold">Danh mục liên kết *</label><select id="new-prod-cat" class="w-full p-1.5 border rounded"></select></div></div>
-        <div class="grid grid-cols-2 gap-2"><div><label class="font-semibold">Giá (VND) *</label><input type="number" id="new-prod-price" class="w-full p-1.5 border rounded" min="1000" step="1000" required value="1500000"></div><div><label class="font-semibold">Tồn kho *</label><input type="number" id="new-prod-stock" class="w-full p-1.5 border rounded" min="0" required value="20"></div></div>
-        <div><label class="font-semibold">Ảnh (URL) *</label><input type="url" id="new-prod-img" class="w-full p-1.5 border rounded" required value="https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500"></div>
-        <div><label class="font-semibold">Mô tả</label><input type="text" id="new-prod-desc" class="w-full p-1.5 border rounded" placeholder="Mô tả chi tiết..."></div>
-        <div class="flex justify-end gap-2 pt-2"><button type="button" onclick="closeModal('modal-product-add')" class="px-3 py-1.5 border rounded">Hủy (Esc)</button><button type="submit" class="px-3 py-1.5 bg-blue-600 text-white rounded font-semibold">Lưu</button></div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: EDIT PRODUCT -->
-  <div id="modal-product-edit" onclick="closeModalOnBackdrop(event, 'modal-product-edit')" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl max-w-md w-full p-5 space-y-3 shadow-xl">
-      <div class="flex justify-between items-center"><span class="font-bold text-slate-800">✏️ Sửa Sản phẩm</span><button onclick="closeModal('modal-product-edit')" class="text-slate-400 font-bold">✕</button></div>
-      <form onsubmit="handleUpdateProduct(event)" class="space-y-2 text-xs">
-        <input type="hidden" id="edit-prod-id">
-        <div><label class="font-semibold">Tên sản phẩm *</label><input type="text" id="edit-prod-name" class="w-full p-1.5 border rounded" required></div>
-        <div class="grid grid-cols-2 gap-2"><div><label class="font-semibold">Danh mục *</label><select id="edit-prod-cat" class="w-full p-1.5 border rounded"></select></div><div><label class="font-semibold">Giá (VND) *</label><input type="number" id="edit-prod-price" class="w-full p-1.5 border rounded" min="1000" step="1000" required></div></div>
-        <div class="grid grid-cols-2 gap-2"><div><label class="font-semibold">Tồn kho *</label><input type="number" id="edit-prod-stock" class="w-full p-1.5 border rounded" min="0" required></div><div><label class="font-semibold">Ảnh (URL)</label><input type="url" id="edit-prod-img" class="w-full p-1.5 border rounded"></div></div>
-        <div><label class="font-semibold">Mô tả</label><input type="text" id="edit-prod-desc" class="w-full p-1.5 border rounded"></div>
-        <div class="flex justify-end gap-2 pt-2"><button type="button" onclick="closeModal('modal-product-edit')" class="px-3 py-1.5 border rounded">Hủy (Esc)</button><button type="submit" class="px-3 py-1.5 bg-blue-600 text-white rounded font-semibold">Cập nhật</button></div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: CHI TIẾT SẢN PHẨM (CHUẨN UI/UX) -->
-  <div id="modal-product-detail" onclick="closeModalOnBackdrop(event, 'modal-product-detail')" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl transition">
-      <div class="relative h-56 bg-slate-100">
-        <img id="detail-prod-img" src="" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500'" />
-        <button onclick="closeModal('modal-product-detail')" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center font-bold hover:bg-black/70">✕</button>
-        <span id="detail-prod-stock" class="absolute bottom-3 left-3 px-2.5 py-1 rounded-full text-xs font-semibold"></span>
-      </div>
-      <div class="p-5 space-y-3">
-        <div class="flex justify-between items-start gap-2">
+      <div class="p-6 md:w-1/2 flex flex-col justify-between space-y-4">
+        <div>
+          <div class="flex items-center justify-between">
+            <span id="detail-cat" class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md uppercase"></span>
+            <button onclick="closeModal('modal-product-detail')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+          </div>
+          <h3 id="detail-name" class="text-lg font-bold text-slate-900 mt-2"></h3>
+          <div class="text-xs text-slate-500 font-mono mt-1">SKU: <span id="detail-sku" class="font-semibold text-slate-700"></span></div>
+          <p id="detail-desc" class="text-xs text-slate-600 mt-3 leading-relaxed max-h-36 overflow-y-auto"></p>
+        </div>
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
           <div>
-            <div class="flex items-center gap-2"><span id="detail-prod-cat" class="px-2 py-0.5 rounded text-xs bg-blue-50 text-blue-600 font-medium"></span><span id="detail-prod-sku" class="text-xs font-mono text-slate-400"></span></div>
-            <h3 id="detail-prod-name" class="font-bold text-slate-900 text-lg mt-1"></h3>
+            <div class="text-[11px] text-slate-400 font-medium">Đơn giá niêm yết:</div>
+            <div id="detail-price" class="text-xl font-extrabold text-blue-600"></div>
           </div>
-          <div id="detail-prod-price" class="text-xl font-extrabold text-blue-600 whitespace-nowrap"></div>
-        </div>
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-600 leading-relaxed">
-          <div class="font-semibold text-slate-800 mb-1">Mô tả thông số kỹ thuật:</div>
-          <div id="detail-prod-desc"></div>
-        </div>
-        <div class="flex justify-between items-center pt-2">
-          <span class="text-xs text-slate-400 font-mono">Định danh: <strong id="detail-prod-id"></strong></span>
-          <div class="flex gap-2">
-            <button onclick="closeModal('modal-product-detail')" class="px-4 py-2 border rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50">Đóng (Esc)</button>
-            <button id="detail-prod-btn-buy" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow">🛒 Thêm vào giỏ</button>
-          </div>
+          <button id="detail-btn-add" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition shadow-md shadow-blue-500/20">
+            🛒 Thêm giỏ hàng
+          </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: HỒ SƠ TÀI KHOẢN (USER PROFILE) -->
-  <div id="modal-user-profile" onclick="closeModalOnBackdrop(event, 'modal-user-profile')" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center pb-2 border-b">
-        <div class="flex items-center gap-2">
-          <img id="profile-avatar-img" class="w-10 h-10 rounded-full object-cover border" />
-          <div><h3 class="font-bold text-slate-800 text-sm">Hồ sơ Cá nhân</h3><span id="profile-role" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-purple-700 font-bold"></span></div>
-        </div>
-        <button onclick="closeModal('modal-user-profile')" class="text-slate-400 font-bold hover:text-slate-600">✕</button>
-      </div>
-      <form onsubmit="handleUpdateProfile(event)" class="space-y-2.5 text-xs">
-        <div><label class="font-semibold text-slate-700">Mã định danh</label><div id="profile-id" class="p-1.5 bg-slate-100 rounded font-mono text-slate-600"></div></div>
-        <div><label class="font-semibold text-slate-700">Email (Định danh đăng nhập)</label><input type="email" id="profile-email" class="w-full p-1.5 bg-slate-100 border rounded cursor-not-allowed" disabled></div>
-        <div><label class="font-semibold text-slate-700">Họ và tên *</label><input type="text" id="profile-name" class="w-full p-1.5 border rounded" required></div>
-        <div class="grid grid-cols-2 gap-2">
-          <div><label class="font-semibold text-slate-700">Số điện thoại *</label><input type="tel" id="profile-phone" class="w-full p-1.5 border rounded" required></div>
-          <div><label class="font-semibold text-slate-700">Avatar URL</label><input type="url" id="profile-avatar" class="w-full p-1.5 border rounded"></div>
-        </div>
-        <div><label class="font-semibold text-slate-700">Địa chỉ giao hàng mặc định *</label><input type="text" id="profile-address" class="w-full p-1.5 border rounded" required></div>
-        <div class="flex justify-end gap-2 pt-2 border-t">
-          <button type="button" onclick="closeModal('modal-user-profile')" class="px-3 py-1.5 border rounded text-slate-600">Đóng (Esc)</button>
-          <button type="submit" class="px-3 py-1.5 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700">💾 Cập nhật hồ sơ (PUT)</button>
-        </div>
-      </form>
-    </div>
-  </div>
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2 pointer-events-none"></div>
 
-  <!-- MODAL: ADD CATEGORY -->
-  <div id="modal-category-add" onclick="closeModalOnBackdrop(event, 'modal-category-add')" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl max-w-sm w-full p-5 space-y-3 shadow-xl">
-      <div class="flex justify-between items-center"><span class="font-bold text-slate-800">📁 Thêm Danh mục mới</span><button onclick="closeModal('modal-category-add')" class="text-slate-400 font-bold">✕</button></div>
-      <form onsubmit="handleCreateCategory(event)" class="space-y-2 text-xs">
-        <div><label class="font-semibold">Mã Code (In hoa, 3-30 ký tự) *</label><input type="text" id="new-cat-code" class="w-full p-1.5 border rounded uppercase font-mono" required placeholder="LAPTOP"></div>
-        <div><label class="font-semibold">Tên hiển thị danh mục *</label><input type="text" id="new-cat-name" class="w-full p-1.5 border rounded" required placeholder="Máy tính xách tay"></div>
-        <div><label class="font-semibold">Mô tả nhóm</label><input type="text" id="new-cat-desc" class="w-full p-1.5 border rounded" placeholder="Mô tả danh mục..."></div>
-        <div class="flex justify-end gap-2 pt-2"><button type="button" onclick="closeModal('modal-category-add')" class="px-3 py-1.5 border rounded">Hủy (Esc)</button><button type="submit" class="px-3 py-1.5 bg-blue-600 text-white rounded font-semibold">Lưu danh mục</button></div>
-      </form>
-    </div>
-  </div>
+  <!-- SHARED FOOTER -->
+  <div id="shared-footer"></div>
 
-  <!-- MODAL: EDIT CATEGORY -->
-  <div id="modal-category-edit" onclick="closeModalOnBackdrop(event, 'modal-category-edit')" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl max-w-sm w-full p-5 space-y-3 shadow-xl">
-      <div class="flex justify-between items-center"><span class="font-bold text-slate-800">✏️ Chỉnh sửa Danh mục</span><button onclick="closeModal('modal-category-edit')" class="text-slate-400 font-bold">✕</button></div>
-      <form onsubmit="handleUpdateCategory(event)" class="space-y-2 text-xs">
-        <input type="hidden" id="edit-cat-id">
-        <div><label class="font-semibold">Mã Code (Bất biến)</label><input type="text" id="edit-cat-code" class="w-full p-1.5 bg-slate-100 border rounded font-mono" disabled></div>
-        <div><label class="font-semibold">Tên danh mục *</label><input type="text" id="edit-cat-name" class="w-full p-1.5 border rounded" required></div>
-        <div><label class="font-semibold">Mô tả</label><input type="text" id="edit-cat-desc" class="w-full p-1.5 border rounded"></div>
-        <div><label class="font-semibold">Trạng thái</label><select id="edit-cat-status" class="w-full p-1.5 border rounded"><option value="ACTIVE">ACTIVE (Hoạt động)</option><option value="INACTIVE">INACTIVE (Tạm ngưng)</option></select></div>
-        <div class="flex justify-end gap-2 pt-2"><button type="button" onclick="closeModal('modal-category-edit')" class="px-3 py-1.5 border rounded">Hủy (Esc)</button><button type="submit" class="px-3 py-1.5 bg-blue-600 text-white rounded font-semibold">Cập nhật (PUT)</button></div>
-      </form>
-    </div>
-  </div>
-
-  <!-- JAVASCRIPT MODULES -->
+  <!-- SCRIPTS -->
   <script src="/js/api.js"></script>
-  <script src="/js/auth.js"></script>
-  <script src="/js/categories.js"></script>
+  <script src="/js/shared-nav.js"></script>
   <script src="/js/buyer.js"></script>
-  <script src="/js/admin.js"></script>
-  <script src="/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      renderSharedHeader('shop');
+      renderSharedFooter();
+      await loadCategoriesFilter();
+      await loadBuyerCatalog();
+    });
+
+    async function loadCategoriesFilter() {
+      const res = await apiCall('GET', '/categories');
+      const select = document.getElementById('buyer-cat');
+      if (!select || !res.data) return;
+      select.innerHTML = '<option value="ALL">📁 Tất cả danh mục</option>' + 
+        res.data.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+    }
+  </script>
 </body>
 </html>

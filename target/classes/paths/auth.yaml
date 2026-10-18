@@ -1,0 +1,78 @@
+# =========================================================================
+# AUTH PATHS: ENDPOINTS ĐĂNG KÝ, ĐĂNG NHẬP VÀ XÁC THỰC
+# =========================================================================
+auth_register:
+  post:
+    tags:
+      - auth
+    summary: Đăng ký tài khoản người mua mới (Register)
+    description: Tạo mới tài khoản khách hàng role CUSTOMER và trả về JWT Bearer token ngay lập tức.
+    operationId: registerCustomer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/auth.yaml#/RegisterRequest'
+    responses:
+      '201':
+        description: Đăng ký thành công, trả về token và thông tin người dùng
+        content:
+          application/json:
+            schema:
+              $ref: '../components/auth.yaml#/AuthResponse'
+      '400':
+        description: Dữ liệu không hợp lệ hoặc Email đã tồn tại
+        content:
+          application/json:
+            schema:
+              $ref: '../components/common.yaml#/ErrorResponse'
+
+auth_login:
+  post:
+    tags:
+      - auth
+    summary: Đăng nhập hệ thống (Login)
+    description: Xác thực bằng email & password, hỗ trợ cả 2 vai trò CUSTOMER và ADMIN.
+    operationId: loginUser
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/auth.yaml#/LoginRequest'
+    responses:
+      '200':
+        description: Đăng nhập thành công
+        content:
+          application/json:
+            schema:
+              $ref: '../components/auth.yaml#/AuthResponse'
+      '401':
+        description: Thông tin đăng nhập không chính xác
+        content:
+          application/json:
+            schema:
+              $ref: '../components/common.yaml#/ErrorResponse'
+
+auth_me:
+  get:
+    tags:
+      - auth
+    summary: Lấy hồ sơ tài khoản đang đăng nhập (Current User Profile)
+    description: Trả về thông tin chi tiết và role của user theo token hoặc session.
+    operationId: getCurrentUser
+    responses:
+      '200':
+        description: Lấy thông tin user hiện tại thành công
+        content:
+          application/json:
+            schema:
+              $ref: '../components/auth.yaml#/AuthUser'
+      '401':
+        description: Chưa xác thực hoặc Token hết hạn
+        content:
+          application/json:
+            schema:
+              $ref: '../components/common.yaml#/ErrorResponse'
+

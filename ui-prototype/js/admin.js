@@ -146,8 +146,8 @@ async function loadAdminOrders() {
       <td class="p-3 font-medium">Khách #${o.customerId}</td>
       <td class="p-3 font-semibold text-blue-600">${o.totalAmount.toLocaleString()} đ</td>
       <td class="p-3">
-        <select onchange="updateOrderStatus(${o.id}, this.value)" class="text-xs font-semibold rounded border border-slate-200 px-2 py-1 ${o.status === 'DELIVERED' ? 'bg-emerald-50 text-emerald-700' : (o.status === 'CANCELLED' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700')}">
-          ${['PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'].map(s => `<option value="${s}" ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}
+        <select onchange="updateOrderStatus(${o.id}, this.value)" class="text-xs font-semibold rounded border border-slate-200 px-2 py-1 ${(o.status === 'SHIPPED' || o.status === 'DELIVERED') ? 'bg-emerald-50 text-emerald-700' : (o.status === 'CANCELLED' ? 'bg-rose-50 text-rose-700' : (o.status === 'PAID' ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700'))}">
+          ${['PENDING', 'PAID', 'SHIPPED', 'CANCELLED', 'CONFIRMED', 'DELIVERED'].map(s => `<option value="${s}" ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}
         </select>
       </td>
       <td class="p-3 text-xs text-slate-500">${new Date(o.createdAt).toLocaleString()}</td>

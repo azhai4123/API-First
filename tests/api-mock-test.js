@@ -237,8 +237,12 @@ async function runTestSuite() {
     assert(error.code === 'INVALID_STATE_TRANSITION', `Code phải là INVALID_STATE_TRANSITION, got ${error.code}`);
   });
 
-  await testCase('TC15: POST & PATCH /orders/{id}/status - Hủy đơn hàng sang CANCELLED (HTTP 200)', async () => {
-    // Tạo đơn mới để test hủy
+  await testCase('TC15: POST & PATCH /orders/{id}/status - Hủy đơn hàng sang CANCELLED & Hoàn kho (HTTP 200)', async () => {
+    // 1. Lấy tồn kho trước khi đặt
+    const pBefore = await (await fetch(`${BASE_URL}/products/101`)).json();
+    const stockBefore = pBefore.stockQuantity;
+
+    // 2. Tạo đơn mới để test hủy (mua 1 cái)
     const createRes = await fetch(`${BASE_URL}/orders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -250,7 +254,7 @@ async function runTestSuite() {
     });
     const newOrder = await createRes.json();
     
-    // Hủy đơn
+    // 3. Hủy đơn
     const cancelRes = await fetch(`${BASE_URL}/orders/${newOrder.id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -259,6 +263,39 @@ async function runTestSuite() {
     assert(cancelRes.status === 200, `Expected 200 OK, got ${cancelRes.status}`);
     const cancelledOrder = await cancelRes.json();
     assert(cancelledOrder.status === 'CANCELLED', 'Trạng thái phải là CANCELLED');
+
+    // 4. Kiểm tra hoàn lại số lượng tồn kho
+    const pAfter = await (await fetch(`${BASE_URL}/products/101`)).json();
+    assert(pAfter.stockQuantity === stockBefore, `Tồn kho phải được hoàn lại ${stockBefore}, hiện tại là ${pAfter.stockQuantity}`);
+  });
+
+  await testCase('TC15B: Chuỗi chuyển đổi trạng thái chuẩn đề bài (PENDING -> PAID -> SHIPPED)', async () => {
+    const createRes = await fetch(`${BASE_URL}/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customerId: 1,
+        shippingAddress: 'Tòa nhà Bitexco, Q1',
+        items: [{ productId: 102, quantity: 1 }]
+      })
+    });
+    const order = await createRes.json();
+
+    // PENDING -> PAID
+    const paidRes = await fetch(`${BASE_URL}/orders/${order.id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'PAID' })
+    });
+    assert(paidRes.status === 200, 'Chuyển sang PAID thất bại');
+
+    // PAID -> SHIPPED
+    const shippedRes = await fetch(`${BASE_URL}/orders/${order.id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'SHIPPED' })
+    });
+    assert(shippedRes.status === 200, 'Chuyển sang SHIPPED thất bại');
   });
 
   await testCase('TC16: DELETE /products/{id} - Xóa tài nguyên (HTTP 204 No Content)', async () => {

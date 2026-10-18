@@ -1,0 +1,105 @@
+openapi: 3.0.3
+info:
+  title: Enterprise Shop RESTful API
+  description: >
+    Hệ thống Shop API chuẩn Doanh nghiệp theo quy trình API-First Development & Spring Boot 3.x.
+    Bao gồm 3 module: Khách hàng (/customers), Sản phẩm (/products), Đơn hàng (/orders).
+  version: 1.0.0
+  contact:
+    name: Backend API Engineering Team
+    email: api-team@example.com
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Spring Boot 3.x Backend Server (Localhost)
+  - url: http://localhost:4010/api/v1
+    description: Mock Server Environment (Fail-Fast UI Testing)
+
+tags:
+  - name: categories
+    description: Quản lý danh mục phân loại hàng hóa
+  - name: customers
+    description: Quản lý hồ sơ thông tin cá nhân và lịch sử tài khoản
+  - name: products
+    description: Quản lý danh mục, giá bán và số lượng tồn kho
+  - name: orders
+    description: Xử lý đặt hàng, tính toán tiền và trạng thái đơn hàng
+
+paths:
+  /categories:
+    $ref: './paths/categories.yaml#/categories_collection'
+  /categories/{id}:
+    $ref: './paths/categories.yaml#/categories_item'
+  /customers:
+    $ref: './paths/customers.yaml#/customers_collection'
+  /customers/{id}:
+    $ref: './paths/customers.yaml#/customers_item'
+  /customers/{id}/orders:
+    $ref: './paths/customers.yaml#/customers_orders_nesting'
+  /products:
+    $ref: './paths/products.yaml#/products_collection'
+  /products/{id}:
+    $ref: './paths/products.yaml#/products_item'
+  /orders:
+    $ref: './paths/orders.yaml#/orders_collection'
+  /orders/{id}:
+    $ref: './paths/orders.yaml#/orders_item'
+  /orders/{id}/status:
+    $ref: './paths/orders.yaml#/orders_status'
+  /auth/register:
+    $ref: './paths/auth.yaml#/auth_register'
+  /auth/login:
+    $ref: './paths/auth.yaml#/auth_login'
+  /auth/me:
+    $ref: './paths/auth.yaml#/auth_me'
+
+components:
+  schemas:
+    PageMetadata:
+      $ref: './components/common.yaml#/PageMetadata'
+    ErrorDetail:
+      $ref: './components/common.yaml#/ErrorDetail'
+    ErrorResponse:
+      $ref: './components/common.yaml#/ErrorResponse'
+    CategoryResponse:
+      $ref: './components/categories.yaml#/CategoryResponse'
+    CategoryCreateRequest:
+      $ref: './components/categories.yaml#/CategoryCreateRequest'
+    CategoryUpdateRequest:
+      $ref: './components/categories.yaml#/CategoryUpdateRequest'
+    LoginRequest:
+      $ref: './components/auth.yaml#/LoginRequest'
+    RegisterRequest:
+      $ref: './components/auth.yaml#/RegisterRequest'
+    AuthUser:
+      $ref: './components/auth.yaml#/AuthUser'
+    AuthResponse:
+      $ref: './components/auth.yaml#/AuthResponse'
+    CustomerResponse:
+      $ref: './components/customers.yaml#/CustomerResponse'
+    CustomerCreateRequest:
+      $ref: './components/customers.yaml#/CustomerCreateRequest'
+    CustomerUpdateRequest:
+      $ref: './components/customers.yaml#/CustomerUpdateRequest'
+    CustomerPageResponse:
+      $ref: './components/customers.yaml#/CustomerPageResponse'
+    ProductResponse:
+      $ref: './components/products.yaml#/ProductResponse'
+    ProductCreateRequest:
+      $ref: './components/products.yaml#/ProductCreateRequest'
+    ProductPatchRequest:
+      $ref: './components/products.yaml#/ProductPatchRequest'
+    ProductPageResponse:
+      $ref: './components/products.yaml#/ProductPageResponse'
+    OrderItemRequest:
+      $ref: './components/orders.yaml#/OrderItemRequest'
+    OrderItemResponse:
+      $ref: './components/orders.yaml#/OrderItemResponse'
+    OrderCreateRequest:
+      $ref: './components/orders.yaml#/OrderCreateRequest'
+    OrderStatusUpdateRequest:
+      $ref: './components/orders.yaml#/OrderStatusUpdateRequest'
+    OrderResponse:
+      $ref: './components/orders.yaml#/OrderResponse'
+    OrderPageResponse:
+      $ref: './components/orders.yaml#/OrderPageResponse'

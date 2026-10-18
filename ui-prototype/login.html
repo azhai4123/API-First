@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng Nhập & Chuyển Đổi Tài Khoản - Enterprise Shop Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="flex flex-col min-h-screen text-slate-800 antialiased font-sans">
+
+  <!-- SHARED HEADER -->
+  <div id="shared-header"></div>
+
+  <!-- AUTH CONTENT WRAPPER -->
+  <main class="flex-1 flex items-center justify-center p-4 py-12">
+    <div class="max-w-md w-full space-y-6">
+
+      <!-- BRAND BANNER -->
+      <div class="text-center space-y-2">
+        <div class="inline-flex w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 items-center justify-center text-white text-2xl shadow-xl shadow-blue-500/20 mb-1">
+          🔐
+        </div>
+        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Xác Thực & Quản Lý Vai Trò</h1>
+        <p class="text-xs text-slate-500">
+          Đăng nhập bằng JWT Token kết nối API Spring Boot <code>/auth/login</code>
+        </p>
+      </div>
+
+      <!-- QUICK ROLE SWITCHER (1-CLICK DÀNH CHO BẢO VỆ ĐỒ ÁN) -->
+      <div class="bg-gradient-to-br from-indigo-50 to-blue-50 border border-blue-200/80 p-4 rounded-3xl space-y-2 shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+            <span>⚡</span> Đăng nhập nhanh 1-Click:
+          </span>
+          <span class="text-[10px] text-blue-600 font-semibold bg-white px-2 py-0.5 rounded-full">Dữ liệu Seed MySQL</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button onclick="quickLogin('admin@shop.com', 'admin123')" class="p-2.5 rounded-xl bg-white hover:bg-indigo-600 hover:text-white border border-indigo-200 text-left transition group shadow-sm">
+            <div class="text-xs font-bold group-hover:text-white text-slate-800">👑 Quản Trị Viên</div>
+            <div class="text-[10px] text-slate-400 group-hover:text-indigo-100 font-mono">admin@shop.com</div>
+          </button>
+          <button onclick="quickLogin('nguyenvana@example.com', 'pass123')" class="p-2.5 rounded-xl bg-white hover:bg-blue-600 hover:text-white border border-blue-200 text-left transition group shadow-sm">
+            <div class="text-xs font-bold group-hover:text-white text-slate-800">🛒 Người Mua Hàng</div>
+            <div class="text-[10px] text-slate-400 group-hover:text-blue-100 font-mono">nguyenvana@...</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- AUTH BOX CARD -->
+      <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xl space-y-5">
+        
+        <!-- Toggle Login / Register -->
+        <div class="grid grid-cols-2 p-1 bg-slate-100 rounded-xl text-xs font-bold">
+          <button id="btn-toggle-login" onclick="showAuthMode('login')" class="py-2 rounded-lg bg-white shadow-sm text-blue-600 transition">Đăng Nhập</button>
+          <button id="btn-toggle-register" onclick="showAuthMode('register')" class="py-2 rounded-lg text-slate-500 hover:text-slate-800 transition">Đăng Ký Mới</button>
+        </div>
+
+        <!-- FORM: LOGIN -->
+        <form id="form-login" onsubmit="handleManualLogin(event)" class="space-y-4 text-xs">
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Địa chỉ Email (*):</label>
+            <input type="email" id="login-email" required value="admin@shop.com" placeholder="admin@shop.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+          </div>
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="font-semibold text-slate-700">Mật khẩu (*):</label>
+            </div>
+            <input type="password" id="login-password" required value="admin123" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+          </div>
+          <button type="submit" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition shadow-lg shadow-blue-500/25 flex items-center justify-center gap-1.5 text-xs">
+            <span>🚀</span> Đăng Nhập Hệ Thống
+          </button>
+        </form>
+
+        <!-- FORM: REGISTER -->
+        <form id="form-register" onsubmit="handleManualRegister(event)" class="hidden space-y-3 text-xs">
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Họ và tên (*):</label>
+            <input type="text" id="reg-name" required placeholder="Nguyễn Văn A" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Email đăng ký (*):</label>
+            <input type="email" id="reg-email" required placeholder="user@example.com" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="font-semibold text-slate-700 block mb-1">Mật khẩu (*):</label>
+            <input type="password" id="reg-password" required minlength="6" placeholder="Tối thiểu 6 ký tự" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Số điện thoại:</label>
+              <input type="tel" id="reg-phone" placeholder="0912345678" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="font-semibold text-slate-700 block mb-1">Địa chỉ nhận hàng:</label>
+              <input type="text" id="reg-address" placeholder="Hà Nội, VN" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+            </div>
+          </div>
+          <button type="submit" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-1.5 text-xs">
+            <span>✨</span> Tạo Tài Khoản Khách Hàng
+          </button>
+        </form>
+
+        <!-- CURRENT LOGGED IN USER INFO -->
+        <div id="current-user-box" class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2.5">
+            <img id="cur-avatar" src="" class="w-8 h-8 rounded-full object-cover border">
+            <div>
+              <div id="cur-name" class="font-bold text-slate-800"></div>
+              <div id="cur-role" class="text-[10px] text-blue-600 font-semibold uppercase"></div>
+            </div>
+          </div>
+          <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-[11px] font-semibold transition">
+            Đăng xuất
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- SHARED FOOTER -->
+  <div id="shared-footer"></div>
+
+  <!-- SCRIPTS -->
+  <script src="/js/api.js"></script>
+  <script src="/js/shared-nav.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderSharedHeader('login');
+      renderSharedFooter();
+      updateCurrentUserDisplay();
+    });
+
+    function showAuthMode(mode) {
+      const isLogin = mode === 'login';
+      document.getElementById('form-login').classList.toggle('hidden', !isLogin);
+      document.getElementById('form-register').classList.toggle('hidden', isLogin);
+      
+      const bLogin = document.getElementById('btn-toggle-login');
+      const bReg = document.getElementById('btn-toggle-register');
+      bLogin.className = `py-2 rounded-lg transition ${isLogin ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500'}`;
+      bReg.className = `py-2 rounded-lg transition ${!isLogin ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-500'}`;
+    }
+
+    function updateCurrentUserDisplay() {
+      const user = state.currentUser;
+      if (!user) return;
+      document.getElementById('cur-avatar').src = user.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80';
+      document.getElementById('cur-name').textContent = user.fullName;
+      document.getElementById('cur-role').textContent = user.role;
+    }
+
+    async function quickLogin(email, password) {
+      document.getElementById('login-email').value = email;
+      document.getElementById('login-password').value = password;
+      await performLogin(email, password);
+    }
+
+    async function handleManualLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      await performLogin(email, password);
+    }
+
+    async function performLogin(email, password) {
+      const res = await apiCall('POST', '/auth/login', { email, password });
+      if (res.status === 200 && res.data) {
+        const token = res.data.token;
+        const user = res.data.user;
+        state.token = token;
+        state.currentUser = user;
+        localStorage.setItem('shop_token', token);
+        localStorage.setItem('shop_user', JSON.stringify(user));
+        
+        showToast(`🎉 Đăng nhập thành công! Chào mừng ${user.fullName} (${user.role})`);
+        updateCurrentUserDisplay();
+        renderSharedHeader('login');
+
+        setTimeout(() => {
+          if (user.role === 'ADMIN') {
+            window.location.href = '/admin.html';
+          } else {
+            window.location.href = '/index.html';
+          }
+        }, 800);
+      } else {
+        showToast(`❌ Đăng nhập thất bại: ${res.data?.message || 'Sai thông tin tài khoản'}`, true);
+      }
+    }
+
+    async function handleManualRegister(e) {
+      e.preventDefault();
+      const fullName = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const phone = document.getElementById('reg-phone').value.trim();
+      const address = document.getElementById('reg-address').value.trim();
+
+      const res = await apiCall('POST', '/auth/register', { fullName, email, password, phone, address });
+      if (res.status === 201 && res.data) {
+        showToast(`🎉 Đăng ký thành công! Hãy đăng nhập.`);
+        showAuthMode('login');
+        document.getElementById('login-email').value = email;
+        document.getElementById('login-password').value = password;
+      } else {
+        showToast(`❌ Đăng ký thất bại: ${res.data?.message || 'Email có thể đã tồn tại'}`, true);
+      }
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('shop_token');
+      localStorage.removeItem('shop_user');
+      state.token = null;
+      state.currentUser = { fullName: 'Khách', role: 'CUSTOMER', email: 'guest@shop.com' };
+      showToast('Đã đăng xuất tài khoản.');
+      updateCurrentUserDisplay();
+      renderSharedHeader('login');
+    }
+  </script>
+</body>
+</html>

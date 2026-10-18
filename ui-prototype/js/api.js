@@ -1,7 +1,7 @@
 /**
- * API SERVICE & SHARED STATE MANAGEMENT
+ * API SERVICE & SHARED STATE MANAGEMENT - KẾT NỐI SPRING BOOT 3.x + MYSQL LARAGON
  */
-const API_BASE = 'http://localhost:4010/api/v1';
+const API_BASE = 'http://localhost:8080/api/v1';
 
 const state = {
   currentUser: JSON.parse(localStorage.getItem('shop_user')) || {

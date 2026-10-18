@@ -6,9 +6,9 @@
 ### 1. Thông Tin Chung Đợt Kiểm Thử
 * **Mục tiêu**: Xác thực toàn diện tính hợp lệ của hợp đồng API `shop-api.yaml` (OpenAPI 3.0.3), kiểm thử luồng dữ liệu trên **Mock Server** (bao gồm 5 thực thể: `Category`, `Product`, `Customer`, `Order`, `OrderItem`), đánh giá tích hợp **UI/UX Prototype**, các trường thời gian Audit Date (`createdAt`, `updatedAt`) và cơ chế **Fail-Fast**.
 * **Môi trường thử nghiệm**: `http://localhost:4010/api/v1` (Mock Server & UI Prototype).
-* **Công cụ thực thi**: Node.js Automated Test Runners (`tests/api-mock-test.js`, `tests/api-advanced-test.js`, `tests/fail-fast-comprehensive-test.js`), Web UI Inspector.
-* **Thời gian thực thi**: 15/10/2026.
-* **Kết quả tổng quát**: **42 / 42 Test Cases PASSED (100% Đạt chuẩn nghiệm thu toàn diện)**.
+* **Công cụ thực thi**: Postman Collection Test Suite (`tests/shop-api.postman_collection.json`), Node.js Automated Test Runners (`tests/api-mock-test.js`, `tests/api-advanced-test.js`, `tests/fail-fast-comprehensive-test.js`), Web UI Inspector.
+* **Thời gian thực thi**: 16/10/2026.
+* **Kết quả tổng quát**: **43 / 43 Test Cases PASSED (100% Đạt chuẩn nghiệm thu toàn diện)**.
 
 ---
 
@@ -23,14 +23,15 @@
 | **TC05** | `GET /customers/{id}` | Lấy chi tiết & kiểm tra ID không tồn tại | `200` & `404` | `200` & `404` | **PASS** |
 | **TC06** | `GET /customers/{id}/orders` | Lịch sử đơn hàng lồng nhau (Nesting) theo thời gian | `200 OK` | `200 OK` | **PASS** |
 | **TC07** | `GET /products` | Lấy danh mục sản phẩm có lọc theo từ khóa & danh mục | `200 OK` | `200 OK` | **PASS** |
-| **TC08** | `POST /products` | Thêm mới sản phẩm hợp lệ vào kho | `201 Created` | `201 Created` | **PASS** |
+| **TC08** | `POST /products` | Thêm mới sản phẩm hợp lệ vào kho (Hỗ trợ chọn ảnh từ thư mục) | `201 Created` | `201 Created` | **PASS** |
 | **TC09** | `PATCH /products/{id}` | Sửa giá/kho, tự động nhảy `updatedAt` | `200 OK` | `200 OK` | **PASS** |
 | **TC10** | `POST /orders` | Đặt hàng thành công (tính tổng tiền, trừ tồn kho) | `201 Created` | `201 Created` | **PASS** |
 | **TC11** | `POST /orders` | **Fail-Fast (FF-01)**: Đặt mua sản phẩm tồn kho = 0 | `422 Unprocessable`| `422 Unprocessable`| **PASS** |
 | **TC12** | `PATCH /orders/{id}/status` | Đổi trạng thái đơn hàng: PENDING $\rightarrow$ CONFIRMED | `200 OK` | `200 OK` | **PASS** |
 | **TC13** | `PATCH /orders/{id}/status` | Đổi trạng thái sang DELIVERED (Đã giao hàng) | `200 OK` | `200 OK` | **PASS** |
-| **TC14** | `PATCH /orders/{id}/status` | **Fail-Fast (FF-04)**: Cấm đổi trạng thái khi đã DELIVERED | `422 Unprocessable`| `422 Unprocessable`| **PASS** |
-| **TC15** | `PATCH /orders/{id}/status` | Hủy đơn hàng sang CANCELLED | `200 OK` | `200 OK` | **PASS** |
+| **TC14** | `PATCH /orders/{id}/status` | **Fail-Fast (FF-04)**: Cấm đổi trạng thái khi đã DELIVERED / SHIPPED | `422 Unprocessable`| `422 Unprocessable`| **PASS** |
+| **TC15** | `PATCH /orders/{id}/status` | **Hủy đơn & Hoàn kho**: Hủy sang CANCELLED, hoàn trả đủ tồn kho | `200 OK` | `200 OK` | **PASS** |
+| **TC15B**| `PATCH /orders/{id}/status` | **Chuỗi chuẩn đề bài**: PENDING $\rightarrow$ PAID $\rightarrow$ SHIPPED | `200 OK` | `200 OK` | **PASS** |
 | **TC16** | `DELETE /products/{id}` | Xóa sản phẩm khỏi kho (Không trả về body) | `204 No Content` | `204 No Content` | **PASS** |
 | **TC17** | `GET /categories` | Lấy danh sách danh mục phân loại sản phẩm | `200 OK` | `200 OK` | **PASS** |
 | **TC18** | `POST /categories` | Tạo danh mục mới (Admin), khởi tạo `createdAt` | `201 Created` | `201 Created` | **PASS** |

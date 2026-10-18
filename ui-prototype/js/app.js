@@ -78,6 +78,21 @@ function nextAdminProductPage() {
   }
 }
 
+// Xử lý chọn ảnh từ thư mục máy tính (FileReader Base64)
+function handleImageFileSelect(event, targetInputId) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const targetInput = document.getElementById(targetInputId);
+    if (targetInput) {
+      targetInput.value = e.target.result;
+      showToast(`Đã nạp ảnh từ máy: ${file.name}`);
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
 // App Initialization
 window.addEventListener('DOMContentLoaded', () => {
   updateAuthUI();
@@ -86,3 +101,4 @@ window.addEventListener('DOMContentLoaded', () => {
   switchView(state.currentView);
   updateHeaderStats();
 });
+

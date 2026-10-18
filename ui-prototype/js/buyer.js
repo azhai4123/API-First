@@ -176,7 +176,7 @@ async function loadBuyerOrders() {
       </div>
       <div class="text-right">
         <div class="font-bold text-blue-600">${o.totalAmount.toLocaleString()} đ</div>
-        <span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${o.status === 'DELIVERED' ? 'bg-emerald-100 text-emerald-700' : (o.status === 'CANCELLED' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700')}">${o.status}</span>
+        <span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${(o.status === 'SHIPPED' || o.status === 'DELIVERED') ? 'bg-emerald-100 text-emerald-700' : (o.status === 'CANCELLED' ? 'bg-rose-100 text-rose-700' : (o.status === 'PAID' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'))}">${o.status}</span>
       </div>
     </div>
   `).join('');
@@ -186,24 +186,32 @@ async function viewProductDetail(id) {
   const res = await apiCall('GET', `/products/${id}`);
   if (res.status === 200 && res.data) {
     const p = res.data;
-    document.getElementById('detail-prod-img').src = p.imageUrl || 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500';
-    document.getElementById('detail-prod-id').textContent = `#${p.id}`;
-    document.getElementById('detail-prod-name').textContent = p.name;
-    document.getElementById('detail-prod-sku').textContent = p.sku;
-    document.getElementById('detail-prod-cat').textContent = p.category;
-    document.getElementById('detail-prod-price').textContent = `${p.price.toLocaleString()} đ`;
-    document.getElementById('detail-prod-desc').textContent = p.description || 'Chưa có thông tin mô tả chi tiết';
+    const imgEl = document.getElementById('detail-img') || document.getElementById('detail-prod-img');
+    const nameEl = document.getElementById('detail-name') || document.getElementById('detail-prod-name');
+    const skuEl = document.getElementById('detail-sku') || document.getElementById('detail-prod-sku');
+    const catEl = document.getElementById('detail-cat') || document.getElementById('detail-prod-cat');
+    const priceEl = document.getElementById('detail-price') || document.getElementById('detail-prod-price');
+    const descEl = document.getElementById('detail-desc') || document.getElementById('detail-prod-desc');
+    const badgeEl = document.getElementById('detail-badge') || document.getElementById('detail-prod-stock');
+
+    if (imgEl) imgEl.src = p.imageUrl || 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500';
+    if (nameEl) nameEl.textContent = p.name;
+    if (skuEl) skuEl.textContent = p.sku;
+    if (catEl) catEl.textContent = p.category;
+    if (priceEl) priceEl.textContent = `${(p.price || 0).toLocaleString()} đ`;
+    if (descEl) descEl.textContent = p.description || 'Chưa có thông tin mô tả chi tiết sản phẩm.';
     
-    const stockEl = document.getElementById('detail-prod-stock');
-    if (p.stockQuantity > 0) {
-      stockEl.className = "px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800";
-      stockEl.textContent = `Còn ${p.stockQuantity} sản phẩm trong kho`;
-    } else {
-      stockEl.className = "px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800";
-      stockEl.textContent = `HẾT HÀNG (0 sản phẩm)`;
+    if (badgeEl) {
+      if (p.stockQuantity > 0) {
+        badgeEl.className = "px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800";
+        badgeEl.textContent = `Còn ${p.stockQuantity} sản phẩm trong kho`;
+      } else {
+        badgeEl.className = "px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800";
+        badgeEl.textContent = `HẾT HÀNG (0 sản phẩm)`;
+      }
     }
 
-    const buyBtn = document.getElementById('detail-prod-btn-buy');
+    const buyBtn = document.getElementById('detail-btn-add') || document.getElementById('detail-prod-btn-buy');
     if (buyBtn) {
       buyBtn.disabled = p.stockQuantity === 0;
       buyBtn.onclick = () => {

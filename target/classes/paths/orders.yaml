@@ -1,0 +1,87 @@
+# =========================================================================
+# PATHS: ĐƠN HÀNG (/orders)
+# =========================================================================
+orders_collection:
+  post:
+    tags: [orders]
+    summary: Đặt hàng mới (tính tiền & kiểm tra tồn kho)
+    operationId: createOrder
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../components/orders.yaml#/OrderCreateRequest' }
+    responses:
+      '201':
+        description: Đặt hàng thành công
+        headers:
+          Location:
+            schema: { type: string, example: "/api/v1/orders/5001" }
+        content:
+          application/json:
+            schema: { $ref: '../components/orders.yaml#/OrderResponse' }
+      '400':
+        description: Lỗi Validation giỏ hàng
+        content:
+          application/json:
+            schema: { $ref: '../components/common.yaml#/ErrorResponse' }
+      '404':
+        description: Khách hàng hoặc sản phẩm không tồn tại
+        content:
+          application/json:
+            schema: { $ref: '../components/common.yaml#/ErrorResponse' }
+      '422':
+        description: Hết hàng trong kho (Fail-Fast)
+        content:
+          application/json:
+            schema: { $ref: '../components/common.yaml#/ErrorResponse' }
+
+orders_item:
+  get:
+    tags: [orders]
+    summary: Xem chi tiết hóa đơn theo ID
+    operationId: getOrderById
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, format: int64 }
+    responses:
+      '200':
+        description: Thành công
+        content:
+          application/json:
+            schema: { $ref: '../components/orders.yaml#/OrderResponse' }
+      '404':
+        description: Không tìm thấy
+        content:
+          application/json:
+            schema: { $ref: '../components/common.yaml#/ErrorResponse' }
+
+orders_status:
+  patch:
+    tags: [orders]
+    summary: Cập nhật trạng thái đơn hàng
+    operationId: updateOrderStatus
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, format: int64 }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../components/orders.yaml#/OrderStatusUpdateRequest' }
+    responses:
+      '200':
+        description: Cập nhật thành công
+        content:
+          application/json:
+            schema: { $ref: '../components/orders.yaml#/OrderResponse' }
+      '422':
+        description: Chuyển đổi trạng thái không hợp lệ
+        content:
+          application/json:
+            schema: { $ref: '../components/common.yaml#/ErrorResponse' }
+

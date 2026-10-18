@@ -1,0 +1,150 @@
+# =========================================================================
+# PATHS: KHÁCH HÀNG (/customers)
+# =========================================================================
+customers_collection:
+  get:
+    tags: [customers]
+    summary: Lấy danh sách khách hàng có phân trang
+    operationId: getCustomers
+    parameters:
+      - name: page
+        in: query
+        schema: { type: integer, default: 0, minimum: 0 }
+      - name: size
+        in: query
+        schema: { type: integer, default: 10, minimum: 1, maximum: 100 }
+      - name: sort
+        in: query
+        schema: { type: string, default: "id,asc" }
+    responses:
+      '200':
+        description: Thành công
+        content:
+          application/json:
+            schema: { $ref: '../components/customers.yaml#/CustomerPageResponse' }
+      '400':
+        description: Tham số không hợp lệ
+        content:
+          application/json:
+            schema: { $ref: '../components/common.yaml#/ErrorResponse' }
+  post:
+    tags: [customers]
+    summary: Đăng ký khách hàng mới
+    operationId: createCustomer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../components/customers.yaml#/CustomerCreateRequest' }
+    responses:
+      '201':
+        description: Tạo thành công
+        headers:
+          Location:
+            schema: { type: string, example: "/api/v1/customers/1" }
+        content:
+          application/json:
+            schema: { $ref: '../components/customers.yaml#/CustomerResponse' }
+      '400':
+        description: Lỗi Validation
+        content:
+          application/json:
+            schema: { $ref: '../components/common.yaml#/ErrorResponse' }
+      '409':
+        description: Email đã tồn tại
+        content:
+          application/json:
+            schema: { $ref: '../components/common.yaml#/ErrorResponse' }
+
+customers_item:
+  get:
+    tags: [customers]
+    summary: Lấy chi tiết hồ sơ khách hàng
+    operationId: getCustomerById
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, format: int64 }
+    responses:
+      '200':
+        description: Thành công
+        content:
+          application/json:
+            schema: { $ref: '../components/customers.yaml#/CustomerResponse' }
+      '404':
+        description: Không tìm thấy khách hàng
+        content:
+          application/json:
+            schema: { $ref: '../components/common.yaml#/ErrorResponse' }
+  put:
+    tags: [customers]
+    summary: Cập nhật hồ sơ khách hàng
+    operationId: updateCustomer
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, format: int64 }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../components/customers.yaml#/CustomerUpdateRequest' }
+    responses:
+      '200':
+        description: Cập nhật thành công
+        content:
+          application/json:
+            schema: { $ref: '../components/customers.yaml#/CustomerResponse' }
+      '404':
+        description: Không tìm thấy
+        content:
+          application/json:
+            schema: { $ref: '../components/common.yaml#/ErrorResponse' }
+  delete:
+    tags: [customers]
+    summary: Xóa tài khoản khách hàng
+    operationId: deleteCustomer
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, format: int64 }
+    responses:
+      '204':
+        description: Xóa thành công (No Content)
+      '404':
+        description: Không tìm thấy
+        content:
+          application/json:
+            schema: { $ref: '../components/common.yaml#/ErrorResponse' }
+
+customers_orders_nesting:
+  get:
+    tags: [customers]
+    summary: Lịch sử đơn hàng của khách hàng (Nesting max 2 cấp)
+    operationId: getCustomerOrders
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, format: int64 }
+      - name: page
+        in: query
+        schema: { type: integer, default: 0, minimum: 0 }
+      - name: size
+        in: query
+        schema: { type: integer, default: 10, minimum: 1, maximum: 100 }
+    responses:
+      '200':
+        description: Thành công
+        content:
+          application/json:
+            schema: { $ref: '../components/orders.yaml#/OrderPageResponse' }
+      '404':
+        description: Không tìm thấy khách hàng
+        content:
+          application/json:
+            schema: { $ref: '../components/common.yaml#/ErrorResponse' }
+
